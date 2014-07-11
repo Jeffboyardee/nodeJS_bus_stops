@@ -1,13 +1,12 @@
 var express = require('express');
 var path = require('path');
-var favicon = require('static-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var request = require('request');
+var xmlparser = require('express-xml-bodyparser');
 
 // var routes = require('./routes/index');
-// var users = require('./routes/users');
 
 var app = express();
 
@@ -15,16 +14,14 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+app.use(xmlparser());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use('/', routes);
-// app.use('/users', users);
-
 app.get('/', function(req, res) {res.render('index')});
 
 app.get('/searching', function(req, res){
@@ -35,12 +32,22 @@ app.get('/searching', function(req, res){
     res.send("Please enter a valid bus number.");
   } else {
     var url = "http://api.metro.net/agencies/lametro/routes/"+val+"/sequence/";
+
     // console.log(url);
     requests(url, function(data){
       res.send(data);
     });
   }
 });
+
+app.post('/receive-xml', function(req, res, next) {
+
+  // req.body contains the parsed xml
+  console.log(req.body);
+
+});
+
+
 
 function requests(url, callback) {
   // request module is used to process the yql url and return the results in JSON format
