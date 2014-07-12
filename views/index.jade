@@ -1,11 +1,26 @@
 extends layout
 
 block content
-   h1 Display bus stops for bus number:
-   input#search(type="search", placeholder="Enter bus number")
-   ul#results
-   include template.html
+	h1 Display bus stops for bus number:
+	#dropdowns
+		select#agencyList
+			option#options
+		#route
+			p route
+			select#routeList
+				option#optionsRoute
+		#direction
+			p direction
+			select#directionList
+				option#optionsDirection
+		#stop
+			p stop
+			select#stopList
+				option#optionsStop
+	input#search(type="search", placeholder="Enter bus number")
+	ul#results
+	include template.html
 
-   script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
-   script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
-   script(src="/javascripts/main.js")
+	script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+	script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
+	script(src="/javascripts/main.js")
