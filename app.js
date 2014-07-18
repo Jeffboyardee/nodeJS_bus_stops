@@ -5,8 +5,16 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var request = require('request');
 var xmlparser = require('express-xml-bodyparser');
+var fs = require('fs');
+var xml2js = require('xml2js');
+var parser = new xml2js.Parser();
+var inspect = require('eyes').inspector({maxLength: false});
+var agencyListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList",
+  routeListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=",
+  directionListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=",
+  stopListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=";
 
-// var routes = require('./routes/index');
+var routes = require('./routes/index');
 
 var app = express();
 
@@ -20,9 +28,59 @@ app.use(bodyParser.urlencoded());
 app.use(xmlparser());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/', routes);
 
-// app.use('/', routes);
-app.get('/', function(req, res) {res.render('index')});
+// app.get('/',  function(req, res){
+  // selected id from agency list
+  // var agencyID = req.params.agency;
+  // console.log("1st, Passed to app.js-------> " + agencyID);
+  // res.send(agencyID);
+  // res.redirect('/agency/'+agencyID);
+  
+  // console.log(app.locals.appMainData);
+// });
+
+/* GET home page with different uri possibility. */
+app.get('/', function(req, res) {
+  var myAgenciesRaw = [];
+  var myAgencies = [];
+  var myAgenciesNames = [];
+  var myAgenciesTags = [];
+
+  if(req.params.agencies)
+    console.log("Agency provided");
+  else
+    console.log("Not provided");
+
+  dataRequests(agencyListUrl, function(data) {
+
+    // converts xml to json and store in result 
+    parser.parseString(data, function(err, result) {
+      myAgenciesRaw = result;
+
+      myAgenciesRaw.body.agency.forEach(function(item) {
+        myAgenciesNames = myAgenciesNames.concat(item.$.title);
+        myAgenciesTags = myAgenciesTags.concat(item.$.tag);
+        myAgencies.push({
+          myAgenciesNames : item.$.title, myAgenciesTags : item.$.tag
+        });
+      });
+      
+      res.render('index', myAgencies);
+      // res.send(myAgencies);
+      // var stringData = JSON.stringify(myAgencies);
+      // res.send(stringData);
+    });
+      console.log(req);
+      console.log(inspect(myAgenciesRaw, false, null));
+      console.log(inspect(myAgencies, false, null));    
+  });
+});
+
+app.get('/agencies/:agencyID', function(req, res) {
+  res.render('index', { title: 'Express' });
+  console.log(req.params.agencyID);
+});
 
 app.get('/searching', function(req, res){
   // input value from search
@@ -32,22 +90,20 @@ app.get('/searching', function(req, res){
     res.send("Please enter a valid bus number.");
   } else {
     var url = "http://api.metro.net/agencies/lametro/routes/"+val+"/sequence/";
-
-    // console.log(url);
+    console.log(url);
+    // calls function requests() set in this file
     requests(url, function(data){
       res.send(data);
     });
   }
 });
 
-app.post('/receive-xml', function(req, res, next) {
-
-  // req.body contains the parsed xml
-  console.log(req.body);
-
-});
-
-
+// a call to get xml data from url
+function dataRequests(url, callback) {
+  request(url, function (err, resp, body) {
+    callback(body);
+  });
+}
 
 function requests(url, callback) {
   // request module is used to process the yql url and return the results in JSON format
@@ -65,9 +121,10 @@ function requests(url, callback) {
       results = body.items;
 
       for (var i=0;i<results.length;i++) {
-        resultsArray.push(
-          {id:results[i]['id'], stop:results[i]['display_name']}
-        );
+        resultsArray.push({
+          id:results[i]['id'], 
+          stop:results[i]['display_name']
+        });
       }
       console.log(resultsArray);
     }
@@ -75,7 +132,6 @@ function requests(url, callback) {
     callback(resultsArray);
   });
 }
-
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {

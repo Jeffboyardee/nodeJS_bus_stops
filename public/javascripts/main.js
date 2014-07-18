@@ -1,6 +1,8 @@
 $(function(){
-	var source = $("#search-results").html(),
-	dataTemplate = Handlebars.compile(source),
+	var inputSource = $("#search-results").html(),
+	optionsSource = $("#data-results").html(),
+	dataTemplate = Handlebars.compile(inputSource),
+	optionsTemplate = Handlebars.compile(optionsSource),
 	agencyListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList",
 	routeListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=",
 	directionListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=",
@@ -13,6 +15,7 @@ $(function(){
 		 var parameters = { search: $(this).val() };
 
 			$.get('/searching', parameters, function(data){
+				console.log("test parameters here-> "+data);
 			    if (data instanceof Array) {
 			    	$results.html( dataTemplate({resultsArray:data}) );	
 			    } else {
@@ -21,10 +24,24 @@ $(function(){
 			});
 		}
 	});
-	$.get(agencyListUrl, function(xml) {
-		xmlParser(xml);
+
+
+	// $.get(agencyListUrl, function(xml) {
+	// 	xmlParser(xml);
+	// });
+
+	$.get('/', function(data) {
+		console.log("Grab json data from app.js-----------> "+data);
+		optionsTemplate(data);
 	});
+
+
 	$( "#agencyList" ).change(function() {
+		var parameters = { id: $('#agencyList option:selected').attr('id') };
+		window.location.replace("/agencies/"+parameters.id);
+
+		
+
 		$.get(routeListUrl+$('#agencyList option:selected').attr('id'), function(xml) { xmlParserRoute(xml); }).done(function() {
 			$.get(directionListUrl+$('#agencyList option:selected').attr('id')+"&r="+$('#routeList option:selected').attr('id'), function(xml) {
 				xmlParserDirection(xml);
