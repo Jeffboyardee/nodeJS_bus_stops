@@ -38,7 +38,6 @@ $(function(){
 		}
 	});
 
-
 	$.get('/agencySearch', function(data) {
 		$agencyList.html( optionsTemplate(data[0]) );
 		$routeList.html( routeTemplate(data[1]) );
@@ -47,95 +46,68 @@ $(function(){
 		$timebox.html( predictionsTemplate(data[4]) );
 	});
 
-
 	$( "#agencyList" ).change(function() {
+		var parameters = { agency: $('#agencyList option:selected').attr('id') };
+
+		$.get('/agencySearchRoute', parameters, function(data) {
+			$('routeList option').remove();
+			$('directionList option').remove();
+			$('stopList option').remove();
+			$('timebox option').remove();
+
+			$routeList.html( routeTemplate(data[1]) );
+			$directionList.html( directionTemplate(data[2]) );	
+			$stopList.html( stopsTemplate(data[3]) );	
+			$timebox.html( predictionsTemplate(data[4]) );
+		});
+		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
+	});
+	$( "#routeList" ).change(function() {
+		var parameters = { 
+			agency: $('#agencyList option:selected').attr('id'), 
+			route: $('#routeList option:selected').attr('id') 
+		};
+
+		$.get('/routeSearchDirection', parameters, function(data) {
+			$('directionList option').remove();
+			$('stopList option').remove();
+			$('timebox option').remove();
+
+			$directionList.html( directionTemplate(data[1]) );	
+			$stopList.html( stopsTemplate(data[2]) );	
+			$timebox.html( predictionsTemplate(data[3]) );
+		});
+		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
+	});
+	$( "#directionList" ).change(function() {
+		var parameters = { 
+			agency: $('#agencyList option:selected').attr('id'), 
+			route: $('#routeList option:selected').attr('id'),
+			direction: $('#directionList option:selected').attr('id') 
+		};
+
+		$.get('/directionSearchStop', parameters, function(data) {
+			$('stopList option').remove();
+			$('timebox option').remove();
+
+			$stopList.html( stopsTemplate(data[0]) );	
+			$timebox.html( predictionsTemplate(data[1]) );
+		});
+		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
+	});	
+	$('#stopList').change(function() {
 		var parameters = { 
 			agency: $('#agencyList option:selected').attr('id'), 
 			route: $('#routeList option:selected').attr('id'),
 			direction: $('#directionList option:selected').attr('id'),
-			stop: $('#stopList option:selected').attr('id')};
-		window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
-	});
-	$( "#routeList" ).change(function() {
-		$.get(directionListUrl+$('#agencyList option:selected').attr('id')+"&r="+$('#routeList option:selected').attr('id'), function(xml) {
-			xmlParserDirection(xml);
-		}).done(function() {
-			$.get(stopListUrl+$('#agencyList option:selected').attr('id')+'&r='+$('#routeList option:selected').attr('id')+'&s='+$('#stopList option:selected').attr('stoptag')+'&useShortTitles=true', function(xml) {
-				xmlParserTime(xml);
-			});
+			stop: $('#stopList option:selected').attr('id')
+		};
+
+		$.get('/stopSearchPrediction', parameters, function(data) {
+			$('timebox option').remove();
+
+			$timebox.html( predictionsTemplate(data[0]) );
 		});
-	});
-	$( "#directionList" ).change(function() {
-		$directionSelected = $('#directionList option:selected').attr('id');
-		$.get(directionListUrl+$('#agencyList option:selected').attr('id')+"&r="+$('#routeList option:selected').attr('id'), function(xml) {
-			xmlParserStop(xml,null,$directionSelected);
-		}).done(function() {
-			$.get(stopListUrl+$('#agencyList option:selected').attr('id')+'&r='+$('#routeList option:selected').attr('id')+'&s='+$('#stopList option:selected').attr('stoptag')+'&useShortTitles=true', function(xml) {
-				xmlParserTime(xml);
-			});
-		});
-	});	
-	$('#stopList').change(function() {
-		$.get(stopListUrl+$('#agencyList option:selected').attr('id')+'&r='+$('#routeList option:selected').attr('id')+'&s='+$('#stopList option:selected').attr('stoptag')+'&useShortTitles=true', function(xml) {
-			xmlParserTime(xml);
-		});
+		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
 	});
 });
-
-function xmlParser(xml) {
-	$(xml).find("agency").each(function() {
-		$('#agencyList').append('<option id="'+$(this).attr('tag')+'" class="'+$(this).attr('regionTitle')+'">'+$(this).attr('title')+'</option>');
-	});
-}
-
-function xmlParserRoute(xml) {
-	var options='';
-
-	$(xml).find("route").each(function() {		
-		options += '<option id="'+$(this).attr('tag')+'">'+$(this).attr('title')+'</option>';
-	});
-	$('#routeList').html(options);
-}
-
-function xmlParserDirection(xml) {
-	var options='';
-	var optionsArray=[];
-
-	$(xml).find("direction").each(function() {		
-		options += '<option id="'+$(this).attr('tag')+'">'+$(this).attr('title')+'</option>';
-		optionsArray.push(
-			{tag:$(this).attr('tag'), title:$(this).attr('title')}
-		);
-	});
-	$('#directionList').html(options);
-	xmlParserStop(xml,optionsArray);
-}
-
-function xmlParserStop(xml,optionsArray,directionSelected) {
-	var options='';
-	
-	if (typeof directionSelected == 'undefined') {
-		$directionSelected = 0;
-		$(xml).find("direction[tag="+optionsArray[$directionSelected].tag+"] stop").each(function() {
-			options += '<option stopTag='+$(this).attr('tag')+'>'+$(xml).find('stop[tag='+$(this).attr('tag')+']').attr('title')+'</option>';
-		});		
-	} else {
-		$directionSelected = directionSelected;
-		$(xml).find("direction[tag="+$('#directionList option:selected').attr('id')+"] stop").each(function() {
-			options += '<option stopTag='+$(this).attr('tag')+'>'+$(xml).find('stop[tag='+$(this).attr('tag')+']').attr('title')+'</option>';
-		});
-	}
-
-	$('#stopList').html(options);	
-}
-
-function xmlParserTime(xml) {
-	var timeArrival = '';
-	var stopTag = $('#stopList option:selected').attr('stoptag');
-
-	$(xml).find("prediction").each(function() {
-		timeArrival += '<p>'+$(this).attr('minutes')+' min</p>';
-	});
-
-	$('#timebox').html(timeArrival);
-}
