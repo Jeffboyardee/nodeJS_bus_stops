@@ -1,0 +1,12 @@
+<script id="predictions-results" type="text/x-handlebars-template">
+
+	{{#each myPredictions}}
+		{{#if myPredictionsMin}}
+	    	<p>{{myPredictionsMin}} min, {{myPredictionsSec}} sec</p>
+	    
+	    {{else}}
+	    	<p>{{myPredictions}}</p>
+	    {{/if}}
+	{{/each}}
+
+</script>

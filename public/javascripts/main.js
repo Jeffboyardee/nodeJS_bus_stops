@@ -1,14 +1,27 @@
 $(function(){
 	var inputSource = $("#search-results").html(),
 	optionsSource = $("#data-results").html(),
+	routeSource = $("#route-results").html(),
+	directionSource = $("#direction-results").html(),
+	stopsSource = $("#stops-results").html(),
+	predictionSource = $('#predictions-results').html(),
 	dataTemplate = Handlebars.compile(inputSource),
 	optionsTemplate = Handlebars.compile(optionsSource),
+	routeTemplate = Handlebars.compile(routeSource),
+	directionTemplate = Handlebars.compile(directionSource),
+	stopsTemplate = Handlebars.compile(stopsSource),
+	predictionsTemplate = Handlebars.compile(predictionSource),
 	agencyListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList",
 	routeListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=",
 	directionListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=",
 	stopListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=";
 
 	$results = $('#results');
+	$agencyList = $('#agencyList');
+	$routeList = $('#routeList');
+	$directionList = $('#directionList');
+	$stopList = $('#stopList');
+	$timebox = $('#timebox');
 
 	$('#search').on('keyup', function(e){
 		if(e.keyCode === 13) {
@@ -26,31 +39,22 @@ $(function(){
 	});
 
 
-	// $.get(agencyListUrl, function(xml) {
-	// 	xmlParser(xml);
-	// });
-
-	$.get('/', function(data) {
-		console.log("Grab json data from app.js-----------> "+data);
-		optionsTemplate(data);
+	$.get('/agencySearch', function(data) {
+		$agencyList.html( optionsTemplate(data[0]) );
+		$routeList.html( routeTemplate(data[1]) );
+		$directionList.html( directionTemplate(data[2]) );	
+		$stopList.html( stopsTemplate(data[3]) );	
+		$timebox.html( predictionsTemplate(data[4]) );
 	});
 
 
 	$( "#agencyList" ).change(function() {
-		var parameters = { id: $('#agencyList option:selected').attr('id') };
-		window.location.replace("/agencies/"+parameters.id);
-
-		
-
-		$.get(routeListUrl+$('#agencyList option:selected').attr('id'), function(xml) { xmlParserRoute(xml); }).done(function() {
-			$.get(directionListUrl+$('#agencyList option:selected').attr('id')+"&r="+$('#routeList option:selected').attr('id'), function(xml) {
-				xmlParserDirection(xml);
-			}).done(function() {
-				$.get(stopListUrl+$('#agencyList option:selected').attr('id')+'&r='+$('#routeList option:selected').attr('id')+'&s='+$('#stopList option:selected').attr('stoptag')+'&useShortTitles=true', function(xml) {
-					xmlParserTime(xml);
-				});
-			});	
-		});	
+		var parameters = { 
+			agency: $('#agencyList option:selected').attr('id'), 
+			route: $('#routeList option:selected').attr('id'),
+			direction: $('#directionList option:selected').attr('id'),
+			stop: $('#stopList option:selected').attr('id')};
+		window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
 	});
 	$( "#routeList" ).change(function() {
 		$.get(directionListUrl+$('#agencyList option:selected').attr('id')+"&r="+$('#routeList option:selected').attr('id'), function(xml) {

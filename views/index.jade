@@ -9,19 +9,20 @@ block content
 		#route
 			p route
 			select#routeList
-				option#optionsRoute
+				include routeTemplate.html
 		#direction
 			p direction
 			select#directionList
-				option#optionsDirection
+				include directionTemplate.html
 		#stop
 			p stop
 			select#stopList
-				option#optionsStop
+				include stopsTemplate.html
 	
 	ul#results
 	include template.html
 	#timebox
+	include timeboxTemplate.html
 
 	script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
 	script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
