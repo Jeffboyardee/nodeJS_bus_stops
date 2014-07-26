@@ -63,7 +63,6 @@ app.get('/agencySearch', function(req, res) {
     // converts xml to json and store in result 
     parser.parseString(data, function(err, result) {
       myAgenciesRaw = result;      
-
       myAgenciesRaw.body.agency.forEach(function(item) {
         myAgencies.push({
           myAgenciesNames : item.$.title, myAgenciesTags : item.$.tag
@@ -72,7 +71,6 @@ app.get('/agencySearch', function(req, res) {
       // res.send(myAgencies);
       myAggregateData.push({myAgencies:myAgencies});
       // inspect(myAggregateData);
-
       // <----------START requesting route
       dataRequests(routeListUrl+myAgencies[0].myAgenciesTags, function(data) {
         // converts xml to json and store in result 
@@ -87,13 +85,11 @@ app.get('/agencySearch', function(req, res) {
           // res.send(myRouts);
           myAggregateData.push({myRouts:myRouts});
           //inspect(myAggregateData);
-
           // <----------START requesting direction and stops
           dataRequests(directionListUrl+myAgencies[0].myAgenciesTags+"&r="+myRouts[0].myRoutsTags, function(data) {
             // converts xml to json and store in result 
             parser.parseString(data, function(err, result) {
               myDirectionsRaw = result;
-              
               myDirectionsRaw.body.route[0].direction.forEach(function(item) {
                 myDirections.push({
                   myDirectionsNames : item.$.title, myDirectionsTags : item.$.tag
@@ -102,7 +98,6 @@ app.get('/agencySearch', function(req, res) {
               // res.send(myDirections);
               myAggregateData.push({myDirections:myDirections});
               //inspect(myDirectionsRaw);
-              
               myDirectionsRaw.body.route[0].direction[0].stop.forEach(function(item) {
                 myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
                   if (itemStop.$.tag == item.$.tag) {
@@ -115,17 +110,12 @@ app.get('/agencySearch', function(req, res) {
               // res.send(myDirections);
               myAggregateData.push({myStops:myStops});
               // inspect(myAggregateData);
-
-
-
               // <----------START requesting prediction times
               dataRequests(stopListUrl+myAgencies[0].myAgenciesTags+"&r="+myRouts[0].myRoutsTags+"&s="+myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
                 // converts xml to json and store in result 
                 parser.parseString(data, function(err, result) {
                   myPredictionsRaw = result;
-                  
                   var predictionsCheck = myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions;
-
                   if (predictionsCheck) {
                     myAggregateData.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
                   } else {
@@ -136,23 +126,24 @@ app.get('/agencySearch', function(req, res) {
                     });                    
                     myAggregateData.push({myPredictions:myPredictions});                    
                   }
-                  res.send(myAggregateData);
-                  // inspect(myAggregateData);
+                  // res.send(myAggregateData);
+                  inspect(myAggregateData);
+                   res.redirect('/test/jeff/wei');
+                  // res.redirect('/agencies/'+
+                  //   myAggregateData[0].myAgencies[0].myAgenciesTags+'/'+
+                  //   myAggregateData[1].myRouts[0].myRoutsTags+'/'+
+                  //   myAggregateData[2].myDirections[0].myDirectionsTags+'/'+
+                  //   myAggregateData[3].myStops[0].myStopsTags
+                  // );
                 });
               });        
               // END requesting prediction times
-
-
-
-
             });
           });        
           // END requesting direction
-
         });
       });
       // END requesting route
-
     });
   });
   // END requesting agency
@@ -160,133 +151,11 @@ app.get('/agencySearch', function(req, res) {
 
 /* GET home page with different uri possibility. */
 app.get('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, res) {  
-  var myAggregateData = [];
-  var myAgenciesRaw = [],
-      myAgencies = [],
-      myAgenciesNames = [],
-      myAgenciesTags = [];
-  var myRoutsRaw = [],
-      myRouts = [],
-      myRoutsNames = [],
-      myRoutsTags = [];
-  var myDirectionsRaw = [],
-      myDirections = [],
-      myDirectionsNames = [],
-      myDirectionsTags = [];
-  var myStopsRaw = [],
-      myStops = [],
-      myStopsNames = [],
-      myStopsTags = [];
-  var myPredictionsRaw = [],
-      myPredictions = [],
-      myPredictionsMin = [],
-      myPredictionsSec = [];    
-
-  // <----------START requesting agency
-  dataRequests(agencyListUrl, function(data) {
-    // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
-      myAgenciesRaw = result;      
-
-      myAgenciesRaw.body.agency.forEach(function(item) {
-        if (item.$.tag == req.params.agencyID) {
-          myAgencies.push({
-            myAgenciesNames : item.$.title, myAgenciesTags : item.$.tag
-          });
-        }
-      });
-
-      // res.send(myAgencies);
-      myAggregateData.push({myAgencies:myAgencies});
-      // inspect(myAggregateData);
-
-      // <----------START requesting route
-      dataRequests(routeListUrl+myAggregateData[0].myAgencies[0].myAgenciesTags, function(data) {
-        // converts xml to json and store in result 
-        parser.parseString(data, function(err, result) {
-          myRoutsRaw = result;
-//inspect(myRoutsRaw);
-          myRoutsRaw.body.route.forEach(function(item) {
-            if (item.$.tag == req.params.routeID) {
-              myRouts.push({
-                myRoutsNames : item.$.title, myRoutsTags : item.$.tag
-              });
-            }
-          });
-          // res.send(myRouts);
-          myAggregateData.push({myRouts:myRouts});
-          // inspect(myAggregateData);
-
-          // <----------START requesting direction and stops
-          dataRequests(directionListUrl+myAgencies[0].myAgenciesTags+"&r="+myRouts[0].myRoutsTags, function(data) {
-            // converts xml to json and store in result 
-            parser.parseString(data, function(err, result) {
-              myDirectionsRaw = result;
-              
-              myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-                if (item.$.tag == req.params.directionID) {
-                  myDirections.push({
-                    myDirectionsNames : item.$.title, myDirectionsTags : item.$.tag
-                  });
-                }
-              });
-              // res.send(myDirections);
-              myAggregateData.push({myDirections:myDirections});
-              inspect(myDirectionsRaw);
-              
-              myDirectionsRaw.body.route[0].direction[0].stop.forEach(function(item) {
-                myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
-                  if (itemStop.$.tag == item.$.tag) {
-                    myStops.push({
-                      myStopsNames : itemStop.$.title, myStopsTags : item.$.tag
-                    });
-                  }
-                });
-              });
-              // res.send(myDirections);
-              myAggregateData.push({myStops:myStops});
-              // inspect(myAggregateData);
-
-
-
-              // <----------START requesting prediction times
-              dataRequests(stopListUrl+myAgencies[0].myAgenciesTags+"&r="+myRouts[0].myRoutsTags+"&s="+myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
-                // converts xml to json and store in result 
-                parser.parseString(data, function(err, result) {
-                  myPredictionsRaw = result;
-                  
-                  var predictionsCheck = myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions;
-
-                  if (predictionsCheck) {
-                    myAggregateData.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
-                  } else {
-                    myPredictionsRaw.body.predictions[0].direction[0].prediction.forEach(function(item) {
-                      myPredictions.push({
-                        myPredictionsMin : item.$.minutes, myPredictionsSec : item.$.seconds
-                      });
-                    });                    
-                    myAggregateData.push({myPredictions:myPredictions});                    
-                  }
-                  res.send(myAggregateData);
-                  //inspect(myAggregateData);
-                });
-              });        
-              // END requesting prediction times
-
-
-
-
-            });
-          });        
-          // END requesting direction
-
-        });
-      });
-      // END requesting route
-
-    });
-  });
-  // END requesting agency  
+  console.log(
+    "agencyID: "+req.params.agencyID+'\n'+
+    "routeID: "+req.params.routeID+'\n'+
+    "directionID: "+req.params.directionID+'\n'+
+    "stopID: "+req.params.stopID+'\n');
   res.render('index', { title: 'Express-Realtime Bus/Metro lookup' });  
 });
 
@@ -404,10 +273,6 @@ app.get('/routeSearchDirection', function(req, res) {
   var agency_val = req.query.agency;
   var route_val = req.query.route;
   var myAggregateData = [];
-  var myAgenciesRaw = [],
-      myAgencies = [],
-      myAgenciesNames = [],
-      myAgenciesTags = [];
   var myRoutsRaw = [],
       myRouts = [],
       myRoutsNames = [],
@@ -497,14 +362,6 @@ app.get('/directionSearchStop', function(req, res) {
       route_val = req.query.route,
       direction_val = req.query.direction;
   var myAggregateData = [];
-  var myAgenciesRaw = [],
-      myAgencies = [],
-      myAgenciesNames = [],
-      myAgenciesTags = [];
-  var myRoutsRaw = [],
-      myRouts = [],
-      myRoutsNames = [],
-      myRoutsTags = [];
   var myDirectionsRaw = [],
       myDirections = [],
       myDirectionsNames = [],
@@ -580,22 +437,6 @@ app.get('/stopSearchPrediction', function(req, res) {
       direction_val = req.query.direction,
       stop_val = req.query.stop;
   var myAggregateData = [];
-  var myAgenciesRaw = [],
-      myAgencies = [],
-      myAgenciesNames = [],
-      myAgenciesTags = [];
-  var myRoutsRaw = [],
-      myRouts = [],
-      myRoutsNames = [],
-      myRoutsTags = [];
-  var myDirectionsRaw = [],
-      myDirections = [],
-      myDirectionsNames = [],
-      myDirectionsTags = [];
-  var myStopsRaw = [],
-      myStops = [],
-      myStopsNames = [],
-      myStopsTags = [];
   var myPredictionsRaw = [],
       myPredictions = [],
       myPredictionsMin = [],
