@@ -10,11 +10,7 @@ $(function(){
 	routeTemplate = Handlebars.compile(routeSource),
 	directionTemplate = Handlebars.compile(directionSource),
 	stopsTemplate = Handlebars.compile(stopsSource),
-	predictionsTemplate = Handlebars.compile(predictionSource),
-	agencyListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList",
-	routeListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=",
-	directionListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=",
-	stopListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=";
+	predictionsTemplate = Handlebars.compile(predictionSource);
 
 	$results = $('#results');
 	$agencyList = $('#agencyList');
