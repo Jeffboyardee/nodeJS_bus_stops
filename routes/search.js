@@ -13,131 +13,16 @@ router.get('/',  function(req, res){
   res.render('index', { title: 'Express-Realtime Bus/Metro lookup' });
 });
 
-router.get('/agencies/:agencyID/:routeID/:directionID/:stopID',  function(req, res){
-  res.render('search', { title: '[Search]Express-Realtime Bus/Metro lookup' });
-});
-
 /* GET home page with different uri possibility. */
-router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, res) {  
+router.get('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, res) {  
   console.log(
     "agencyID: "+req.params.agencyID+'\n'+
     "routeID: "+req.params.routeID+'\n'+
     "directionID: "+req.params.directionID+'\n'+
-    "stopID: "+req.params.stopID);
-  
-  var myAggregateData = [];
-  var myAgenciesRaw = [],
-      myAgencies = [],
-      myAgenciesNames = [],
-      myAgenciesTags = [];
-  var myRoutsRaw = [],
-      myRouts = [],
-      myRoutsNames = [],
-      myRoutsTags = [];
-  var myDirectionsRaw = [],
-      myDirections = [],
-      myDirectionsNames = [],
-      myDirectionsTags = [];
-  var myStopsRaw = [],
-      myStops = [],
-      myStopsNames = [],
-      myStopsTags = [];
-  var myPredictionsRaw = [],
-      myPredictions = [],
-      myPredictionsMin = [],
-      myPredictionsSec = [];    
-
-  // <----------START requesting agency
-  dataRequests(agencyListUrl, function(data) {
-    // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
-      myAgenciesRaw = result;      
-      myAgenciesRaw.body.agency.forEach(function(item) {
-        myAgencies.push({
-          myAgenciesNames : item.$.title, myAgenciesTags : item.$.tag
-        });
-      });      
-      // res.send(myAgencies);
-      myAggregateData.push({myAgencies:myAgencies});
-      // inspect(myAggregateData);
-      // <----------START requesting route
-      dataRequests(routeListUrl+req.params.agencyID, function(data) {
-        // converts xml to json and store in result 
-        parser.parseString(data, function(err, result) {
-          myRoutsRaw = result;
-
-          myRoutsRaw.body.route.forEach(function(item) {
-            myRouts.push({
-              myRoutsNames : item.$.title, myRoutsTags : item.$.tag
-            });
-          });
-          // res.send(myRouts);
-          myAggregateData.push({myRouts:myRouts});
-          //inspect(myAggregateData);
-          // <----------START requesting direction and stops
-          dataRequests(directionListUrl+req.params.agencyID+"&r="+req.params.routeID, function(data) {
-            // converts xml to json and store in result 
-            parser.parseString(data, function(err, result) {
-              myDirectionsRaw = result;
-              myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-                myDirections.push({
-                  myDirectionsNames : item.$.title, myDirectionsTags : item.$.tag
-                });
-              });
-              // res.send(myDirections);
-              myAggregateData.push({myDirections:myDirections});
-              //inspect(myDirectionsRaw);
-              myDirectionsRaw.body.route[0].direction[0].stop.forEach(function(item) {
-                myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
-                  if (itemStop.$.tag == item.$.tag) {
-                    myStops.push({
-                      myStopsNames : itemStop.$.title, myStopsTags : item.$.tag
-                    });
-                  }
-                });
-              });
-              // res.send(myDirections);
-              myAggregateData.push({myStops:myStops});
-              inspect(myAggregateData);
-              // <----------START requesting prediction times
-              dataRequests(stopListUrl+req.params.agencyID+"&r="+req.params.routeID+"&s="+req.params.stopID+"&useShortTitles=true", function(data) {
-                // converts xml to json and store in result 
-                parser.parseString(data, function(err, result) {
-                  myPredictionsRaw = result;
-                  var predictionsCheck = myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions;
-                  if (predictionsCheck) {
-                    myAggregateData.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
-                  } else {
-                    myPredictionsRaw.body.predictions[0].direction[0].prediction.forEach(function(item) {
-                      myPredictions.push({
-                        myPredictionsMin : item.$.minutes, myPredictionsSec : item.$.seconds
-                      });
-                    });                    
-                    myAggregateData.push({myPredictions:myPredictions});                    
-                  }
-                  res.send(myAggregateData);
-                  inspect(myAggregateData);
-                  // res.redirect('/agencies');
-                  // res.redirect('/agencies/'+
-                  //   myAggregateData[0].myAgencies[0].myAgenciesTags+'/'+
-                  //   myAggregateData[1].myRouts[0].myRoutsTags+'/'+
-                  //   myAggregateData[2].myDirections[0].myDirectionsTags+'/'+
-                  //   myAggregateData[3].myStops[0].myStopsTags
-                  // );
-                });
-              });        
-              // END requesting prediction times
-            });
-          });        
-          // END requesting direction
-        });
-      });
-      // END requesting route
-    });
-  });
-  // END requesting agency
-
+    "stopID: "+req.params.stopID+'\n');
+  res.render('index', { title: 'page 2' }); 
 });
+
 
 /* Perform initial search of online data source */
 router.get('/agencySearch', function(req, res) {
@@ -231,12 +116,9 @@ router.get('/agencySearch', function(req, res) {
                     });                    
                     myAggregateData.push({myPredictions:myPredictions});                    
                   }
-                  res.send( {agencyName: myAggregateData[0].myAgencies[0].myAgenciesTags,
-                    routeName: myAggregateData[1].myRouts[0].myRoutsTags,
-                    directionName: myAggregateData[2].myDirections[0].myDirectionsTags,
-                    stopsName: myAggregateData[3].myStops[0].myStopsTags} );
-                  // inspect(myAggregateData);
-                  // router.locals.myAggregateData;
+                  res.send(myAggregateData);
+                  inspect(myAggregateData);
+                  // res.redirect('/agencies');
                   // res.redirect('/agencies/'+
                   //   myAggregateData[0].myAgencies[0].myAgenciesTags+'/'+
                   //   myAggregateData[1].myRouts[0].myRoutsTags+'/'+
@@ -351,12 +233,8 @@ router.get('/agencySearchRoute', function(req, res) {
                     });                    
                     myAggregateData.push({myPredictions:myPredictions});                    
                   }
-                  // res.send(myAggregateData);
+                  res.send(myAggregateData);
                   //inspect(myAggregateData);
-                  res.send( {agencyName: val,
-                    routeName: myAggregateData[1].myRouts[0].myRoutsTags,
-                    directionName: myAggregateData[2].myDirections[0].myDirectionsTags,
-                    stopsName: myAggregateData[3].myStops[0].myStopsTags} );
                 });
               });        
               // END requesting prediction times

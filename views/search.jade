@@ -1,0 +1,29 @@
+extends layout
+
+block content
+	h1 SEARCH Page:
+	input#search(type="search", placeholder="Enter bus number")
+	#dropdowns
+		select#agencyList
+			include optionsTemplate.html
+		#route
+			p route
+			select#routeList
+				include routeTemplate.html
+		#direction
+			p direction
+			select#directionList
+				include directionTemplate.html
+		#stop
+			p stop
+			select#stopList
+				include stopsTemplate.html
+	
+	ul#results
+	include template.html
+	#timebox
+	include timeboxTemplate.html
+
+	script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+	script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
+	script(src="/javascripts/search.js")

@@ -19,6 +19,16 @@ $(function(){
 	$stopList = $('#stopList');
 	$timebox = $('#timebox');
 
+
+	$.post(location.pathname, function(data) {
+		// console.log(location.pathname);
+		$agencyList.html( optionsTemplate(data[0]) );
+		$routeList.html( routeTemplate(data[1]) );
+		$directionList.html( directionTemplate(data[2]) );	
+		$stopList.html( stopsTemplate(data[3]) );	
+		$timebox.html( predictionsTemplate(data[4]) );
+	});
+
 	$('#search').on('keyup', function(e){
 		if(e.keyCode === 13) {
 		 var parameters = { search: $(this).val() };
@@ -34,21 +44,6 @@ $(function(){
 		}
 	});
 
-	$.get('/agencySearch', function(data) {
-		// $agencyList.html( optionsTemplate(data[0]) );
-		// $routeList.html( routeTemplate(data[1]) );
-		// $directionList.html( directionTemplate(data[2]) );	
-		// $stopList.html( stopsTemplate(data[3]) );	
-		// $timebox.html( predictionsTemplate(data[4]) );
-
-		var tempString = data["agencyName"],
-			tempString1 = data["routeName"],
-			tempString2 = data["directionName"],
-			tempString3 = data["stopsName"];
-		// console.log("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
-		window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
-	});
-
 	$( "#agencyList" ).change(function() {
 		var parameters = { agency: $('#agencyList option:selected').attr('id') };
 
@@ -57,13 +52,13 @@ $(function(){
 			$('directionList option').remove();
 			$('stopList option').remove();
 			$('timebox option').remove();
-
-			$routeList.html( routeTemplate(data[1]) );
-			$directionList.html( directionTemplate(data[2]) );	
-			$stopList.html( stopsTemplate(data[3]) );	
-			$timebox.html( predictionsTemplate(data[4]) );
+			var tempString = data["agencyName"],
+				tempString1 = data["routeName"],
+				tempString2 = data["directionName"],
+				tempString3 = data["stopsName"];
+			// console.log("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
+			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
-		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
 	});
 	$( "#routeList" ).change(function() {
 		var parameters = { 
