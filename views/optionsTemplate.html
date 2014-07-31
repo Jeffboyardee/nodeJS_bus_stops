@@ -1,5 +1,9 @@
 <script id="data-results" type="text/x-handlebars-template">
 {{#each myAgencies}}
-    <option id="{{myAgenciesTags}}">{{myAgenciesNames}}</option>
+    {{#if selected.length}}
+    	<option id="{{myAgenciesTags}}" selected>{{myAgenciesNames}}</option>
+    {{else}}
+    	<option id="{{myAgenciesTags}}">{{myAgenciesNames}}</option>
+    {{/if}}
 {{/each}}
 </script>
