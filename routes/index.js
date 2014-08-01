@@ -93,10 +93,12 @@ router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, r
           //inspect(myAggregateData);
           // <----------START requesting direction and stops
           dataRequests(directionListUrl+req.params.agencyID+"&r="+req.params.routeID, function(data) {
+            console.log(directionListUrl+req.params.agencyID+"&r="+req.params.routeID);
             // converts xml to json and store in result 
             parser.parseString(data, function(err, result) {
               myDirectionsRaw = result;
               myDirectionsRaw.body.route[0].direction.forEach(function(item) {
+                
                 if (req.params.directionID == item.$.tag) {
                   myDirections.push({                  
                     myDirectionsNames : item.$.title, myDirectionsTags : item.$.tag, selected : 'yes'
@@ -106,28 +108,31 @@ router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, r
                     myDirectionsNames : item.$.title, myDirectionsTags : item.$.tag                  
                   });
                 }
+
               });
 
               myAggregateData.push({myDirections:myDirections});
-              //inspect(myDirectionsRaw);
+              // inspect(myAggregateData);
               myDirectionsRaw.body.route[0].direction[0].stop.forEach(function(item) {
                 myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
-                  if (itemStop.$.tag == item.$.tag) {
-                    if (req.params.stopID == item.$.tag) {
-                      myStops.push({
-                        myStopsNames : itemStop.$.title, myStopsTags : item.$.tag, selected : 'yes'
-                      });
-                    } else {
-                      myStops.push({
-                        myStopsNames : itemStop.$.title, myStopsTags : item.$.tag
-                      });
+                  if (req.params.stopID == item.$.tag) {
+                    if (itemStop.$.tag == item.$.tag) {
+                        myStops.push({
+                          myStopsNames : itemStop.$.title, myStopsTags : item.$.tag, selected : 'yes'
+                        });                     
+                    }
+                  } else {
+                    if (itemStop.$.tag == item.$.tag) {
+                        myStops.push({
+                          myStopsNames : itemStop.$.title, myStopsTags : item.$.tag
+                        });                     
                     }
                   }
                 });
               });
 
               myAggregateData.push({myStops:myStops});
-              // inspect(myAggregateData);
+              inspect(myAggregateData);
               // <----------START requesting prediction times
               dataRequests(stopListUrl+req.params.agencyID+"&r="+req.params.routeID+"&s="+req.params.stopID+"&useShortTitles=true", function(data) {
                 // converts xml to json and store in result 
@@ -485,10 +490,10 @@ router.get('/directionSearchStop', function(req, res) {
       myDirectionsRaw = result;
      
       myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-        console.log('item.$.tag: '+item.$.tag+'\n'+'direction_val: '+direction_val);
+        // console.log('item.$.tag: '+item.$.tag+'\n'+'direction_val: '+direction_val);
         if (item.$.tag == direction_val) {
           item.stop.forEach(function(item) {
-            
+              
               myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
                 if (itemStop.$.tag == item.$.tag) {
                   myStops.push({
@@ -501,7 +506,7 @@ router.get('/directionSearchStop', function(req, res) {
         }
       });
       myAggregateData.push({myStops:myStops});
-      inspect(myStops);
+      // inspect(myStops);
       // <----------START requesting prediction times
       dataRequests(stopListUrl+agency_val+"&r="+route_val+"&s="+myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
         // converts xml to json and store in result 
