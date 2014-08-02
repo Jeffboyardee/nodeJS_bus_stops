@@ -93,7 +93,6 @@ router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, r
           //inspect(myAggregateData);
           // <----------START requesting direction and stops
           dataRequests(directionListUrl+req.params.agencyID+"&r="+req.params.routeID, function(data) {
-            console.log(directionListUrl+req.params.agencyID+"&r="+req.params.routeID);
             // converts xml to json and store in result 
             parser.parseString(data, function(err, result) {
               myDirectionsRaw = result;
@@ -113,22 +112,22 @@ router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, r
 
               myAggregateData.push({myDirections:myDirections});
               // inspect(myAggregateData);
-              myDirectionsRaw.body.route[0].direction[0].stop.forEach(function(item) {
-                myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) {
-                  if (req.params.stopID == item.$.tag) {
-                    if (itemStop.$.tag == item.$.tag) {
-                        myStops.push({
-                          myStopsNames : itemStop.$.title, myStopsTags : item.$.tag, selected : 'yes'
-                        });                     
-                    }
-                  } else {
-                    if (itemStop.$.tag == item.$.tag) {
+
+              myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
+                if (req.params.directionID == itemDirection.$.tag) { // finding the correct direction
+                  // console.log("test: "+req.params.directionID)
+                  itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction
+                    // inspect(item);
+                    myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
+                      // inspect(itemStop.$.title);
+                      if (item.$.tag == itemStop.$.tag) {
                         myStops.push({
                           myStopsNames : itemStop.$.title, myStopsTags : item.$.tag
-                        });                     
-                    }
-                  }
-                });
+                        });
+                      }                    
+                    });
+                  });
+                }
               });
 
               myAggregateData.push({myStops:myStops});

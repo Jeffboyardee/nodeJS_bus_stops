@@ -83,8 +83,8 @@ $(function(){
 		};
 
 		$.get('/directionSearchStop', parameters, function(data) {
-			// $('stopList option').remove();
-			// $('timebox option').remove();
+			$('stopList option').remove();
+			$('timebox option').remove();
 
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
@@ -102,10 +102,13 @@ $(function(){
 		};
 
 		$.get('/stopSearchPrediction', parameters, function(data) {
-			$('timebox option').remove();
+			// $('timebox option').remove();
 
-			$timebox.html( predictionsTemplate(data[0]) );
+			var tempString = data["agencyName"],
+				tempString1 = data["routeName"],
+				tempString2 = data["directionName"],
+				tempString3 = data["stopsName"];
+			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
-		// window.location.replace("/agencies/"+parameters.agency+"/"+parameters.route+"/"+parameters.direction+"/"+parameters.stop);
 	});
 });
