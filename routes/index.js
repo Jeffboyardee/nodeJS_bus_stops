@@ -145,7 +145,8 @@ router.post('/agencies/:agencyID/:routeID/:directionID/:stopID', function(req, r
                   myPredictionsRaw = result;
                   var predictionsCheck = myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions;
                   if (predictionsCheck) {
-                    myAggregateData.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
+                    myPredictions.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
+                    myAggregateData.push({myPredictions:myPredictions});   
                   } else {
                     myPredictionsRaw.body.predictions[0].direction[0].prediction.forEach(function(item) {
                       myPredictions.push({
@@ -578,6 +579,7 @@ router.get('/stopSearchPrediction', function(req, res) {
 
           if (predictionsCheck) {
             myAggregateData.push({myPredictions:myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions});
+            myAggregateData.push({myPredictions:myPredictions});
           } else {
             myPredictionsRaw.body.predictions[0].direction[0].prediction.forEach(function(item) {
               myPredictions.push({
