@@ -1,6 +1,20 @@
-<script id="data-results" type="text/x-handlebars-template">
+<!--<script id="data-results" type="text/x-handlebars-template">
+<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">Dropdown<span class="caret"></span></button>
+<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 {{#each myAgencies}}
     {{#if selected.length}}
+    	<li role="presentation" id="{{myAgenciesTags}}" selected><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
+    {{else}}
+    	<li role="presentation" id="{{myAgenciesTags}}"><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
+    {{/if}}
+{{/each}}
+</ul>
+</script>
+-->
+
+<script id="data-results" type="text/x-handlebars-template">
+{{#each myAgencies}}
+	{{#if selected.length}}
     	<option id="{{myAgenciesTags}}" selected>{{myAgenciesNames}}</option>
     {{else}}
     	<option id="{{myAgenciesTags}}">{{myAgenciesNames}}</option>

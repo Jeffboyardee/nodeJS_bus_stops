@@ -15,6 +15,9 @@ a {
   border-radius:8px;
 }
 
+#dropdowns {
+	position: relative;
+}
 #dropdowns p {
 	display: inline-block;
 }
