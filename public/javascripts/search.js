@@ -1,30 +1,30 @@
 $(function(){
 	var inputSource = $("#search-results").html(),
-	optionsSource = $("#data-results").html(),
-	routeSource = $("#route-results").html(),
-	directionSource = $("#direction-results").html(),
-	stopsSource = $("#stops-results").html(),
-	predictionSource = $('#predictions-results').html(),
-	dataTemplate = Handlebars.compile(inputSource),
-	optionsTemplate = Handlebars.compile(optionsSource),
-	routeTemplate = Handlebars.compile(routeSource),
-	directionTemplate = Handlebars.compile(directionSource),
-	stopsTemplate = Handlebars.compile(stopsSource),
-	predictionsTemplate = Handlebars.compile(predictionSource);
+		optionsSource = $("#data-results").html(),
+		routeSource = $("#route-results").html(),
+		directionSource = $("#direction-results").html(),
+		stopsSource = $("#stops-results").html(),
+		predictionSource = $('#predictions-results').html(),
+		dataTemplate = Handlebars.compile(inputSource),
+		optionsTemplate = Handlebars.compile(optionsSource),
+		routeTemplate = Handlebars.compile(routeSource),
+		directionTemplate = Handlebars.compile(directionSource),
+		stopsTemplate = Handlebars.compile(stopsSource),
+		predictionsTemplate = Handlebars.compile(predictionSource);
 
 	$results = $('#results');
 	$agencyList = $('#agencyList');
 	$routeList = $('#routeList');
 	$directionList = $('#directionList');
 	$stopList = $('#stopList');
-	$timebox = $('#timebox');
+	$predictions = $('#predictions');
 
 	$.post(location.pathname, function(data) {
 		$agencyList.html( optionsTemplate(data[0]) );
 		$routeList.html( routeTemplate(data[1]) );
 		$directionList.html( directionTemplate(data[2]) );	
 		$stopList.html( stopsTemplate(data[3]) );	
-		$timebox.html( predictionsTemplate(data[4]) );
+		$predictions.html( predictionsTemplate(data[4]) );
 	});
 
 	$('#search').on('keyup', function(e){
@@ -46,10 +46,6 @@ $(function(){
 		var parameters = { agency: $('#agencyList option:selected').attr('id') };
 
 		$.get('/agencySearchRoute', parameters, function(data) {
-			// $('routeList option').remove();
-			// $('directionList option').remove();
-			// $('stopList option').remove();
-			// $('timebox option').remove();
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
@@ -64,10 +60,6 @@ $(function(){
 		};
 
 		$.get('/routeSearchDirection', parameters, function(data) {
-			// $('directionList option').remove();
-			// $('stopList option').remove();
-			// $('timebox option').remove();
-
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
@@ -83,9 +75,6 @@ $(function(){
 		};
 
 		$.get('/directionSearchStop', parameters, function(data) {
-			$('stopList option').remove();
-			$('timebox option').remove();
-
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
@@ -102,8 +91,6 @@ $(function(){
 		};
 
 		$.get('/stopSearchPrediction', parameters, function(data) {
-			// $('timebox option').remove();
-
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
