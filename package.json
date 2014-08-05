@@ -10,11 +10,11 @@
     "cookie-parser": "~1.0.1",
     "debug": "~0.7.4",
     "express": "~4.2.0",
+    "eyes": "*",
     "jade": "~1.3.0",
     "morgan": "~1.0.0",
-    "request": "*",
-    "xml2js": "*",
     "node-fs": "*",
-    "eyes": "*"
+    "request": "*",
+    "xml2js": "*"
   }
 }
