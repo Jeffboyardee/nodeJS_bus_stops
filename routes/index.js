@@ -59,6 +59,105 @@ router.get('/agencySearch', function(req, res) {
   }); // END requesting agency
 });
 
+/* POST home page and redirect to dynamic url for mobile */
+router.post('/agencySearch-mobile', function(req, res) {  
+  inspect(pt.myAggregateData);
+  pt.agencyRequestMobile(agencyListUrl, function(data) {
+    pt.routeRequestMobile(routeListUrl+pt.myAgencies[0].myAgenciesTags, function(data) {
+      pt.directionsStopsRequestMobile(directionListUrl+pt.myAgencies[0].myAgenciesTags+"&r="+pt.myRouts[0].myRoutsTags, function(data) {
+        pt.predictionsRequest(stopListUrl+pt.myAgencies[0].myAgenciesTags+"&r="+pt.myRouts[0].myRoutsTags+"&s="+pt.myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
+          // inspect(pt.myAggregateData);
+          res.send(pt.myAggregateData);
+          pt = null; // clear instance of PublicTransit()
+          pt = new PublicTransit(); // create new instance of PublicTransit()
+        });
+      }); // END requesting direction
+    }); // END requesting route
+  }); // END requesting agency
+});
+
+/* POST home page and redirect to dynamic url for mobile */
+router.post('/agencySearchMobile-change-agency', function(req, res) {  
+    var agency = req.body.agency;
+    console.log("agency change: "+agency);
+    pt = null; // clear instance of PublicTransit()
+    pt = new PublicTransit(); // create new instance of PublicTransit()
+
+    pt.routeRequestMobile(routeListUrl+agency, function(data) {
+      pt.directionsStopsRequestMobile(directionListUrl+agency+"&r="+pt.myRouts[0].myRoutsTags, function(data) {
+        pt.predictionsRequest(stopListUrl+agency+"&r="+pt.myRouts[0].myRoutsTags+"&s="+pt.myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
+          // inspect(pt.myAggregateData);
+          res.send(pt.myAggregateData);
+          // pt = null; // clear instance of PublicTransit()
+          // pt = new PublicTransit(); // create new instance of PublicTransit()
+        });
+      }); // END requesting direction
+    }); // END requesting route
+
+});
+
+/* POST home page and redirect to dynamic url for mobile */
+router.post('/agencySearchMobile-change-route', function(req, res) {  
+    var agency = req.body.agency;
+    var route = req.body.route;
+    console.log("route change: "+route);
+    pt = null; // clear instance of PublicTransit()
+    pt = new PublicTransit(); // create new instance of PublicTransit()
+
+      pt.directionsStopsRequestMobile(directionListUrl+agency+"&r="+route, function(data) {
+        pt.predictionsRequest(stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
+          // inspect(pt.myAggregateData);
+          res.send(pt.myAggregateData);
+          // pt = null; // clear instance of PublicTransit()
+          // pt = new PublicTransit(); // create new instance of PublicTransit()
+        });
+      }); // END requesting direction
+
+});
+
+/* POST home page and redirect to dynamic url for mobile */
+router.post('/agencySearchMobile-change-direction', function(req, res) {  
+    var agency = req.body.agency;
+    var route = req.body.route;
+    var direction = req.body.direction;
+    console.log("route direction: "+direction);
+    pt = null; // clear instance of PublicTransit()
+    pt = new PublicTransit(); // create new instance of PublicTransit()
+
+      pt.directionsRequestMobile(directionListUrl+agency+"&r="+route, direction, function(data) {
+        pt.stopsRequestMobile(directionListUrl+agency+"&r="+route, direction, function(data) {
+          pt.predictionsRequest(stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myStopsTags+"&useShortTitles=true", function(data) {
+            // inspect(pt.myAggregateData);
+            res.send(pt.myAggregateData);
+            // pt = null; // clear instance of PublicTransit()
+            // pt = new PublicTransit(); // create new instance of PublicTransit()
+          });
+        }); // END requesting direction
+      }); // END requesting direction
+
+});
+
+/* POST home page and redirect to dynamic url for mobile */
+router.post('/agencySearchMobile-change-stop', function(req, res) {  
+    var agency = req.body.agency;
+    var route = req.body.route;
+    var direction = req.body.direction;
+    var stop = req.body.stop;
+    console.log("change stop: "+stop);
+    pt = null; // clear instance of PublicTransit()
+    pt = new PublicTransit(); // create new instance of PublicTransit()
+
+
+    pt.predictionsRequest(stopListUrl+agency+"&r="+route+"&s="+stop+"&useShortTitles=true", function(data) {
+      // inspect(pt.myAggregateData);
+      res.send(pt.myAggregateData);
+      // pt = null; // clear instance of PublicTransit()
+      // pt = new PublicTransit(); // create new instance of PublicTransit()
+    });
+
+
+});
+
 /** Perform searches depending on dropdown selected **/
 router.get('/agencySearchRoute', function(req, res) {
   var agency_val = req.query.agency;  
@@ -155,6 +254,25 @@ router.get('/searching', function(req, res){
   }
 });
 
+function isEmpty(obj) {
+    // null and undefined are "empty"
+    if (obj == null) return true;
+ 
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length && obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+ 
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and toValue enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+ 
+    return true;
+}
+
 /** 
  * PublicTransit class Constructor
 **/
@@ -236,6 +354,67 @@ PublicTransit.prototype.agencyRequest = function (url, agencyID, callback) {
 
 /**
  * @public
+ * @description: Requests list of agencies from nextBus
+ * @param url: The url of the api that provides a list of agencies available
+ * @param agencyID: The agency id (optional) taken from the url
+**/
+PublicTransit.prototype.agencyRequestMobile = function (url, callback) {
+  var that = this;
+  var argumentsMain = arguments.length;
+
+  // if (argumentsMain == 2) {
+    this.dataRequests(url, function(data) {
+      // converts xml to json and store in result 
+      parser.parseString(data, function(err, result) {
+        that.myAgenciesRaw = result;      
+        var initialTag = 0;
+        that.myAgenciesRaw.body.agency.forEach(function(item) {
+          if (initialTag == 0) {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myAgenciesTags : item.$.tag, selected : 'yes'
+            });
+          } else {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myAgenciesTags : item.$.tag
+            });
+          }
+          initialTag++;
+        });
+        that.myAggregateData.push({myAgencies:that.myAgencies});
+        // inspect(that.myAgencies);
+        callback();
+      });
+    });
+  // } else {
+  //   this.dataRequests(url, function(data) {
+  //     // converts xml to json and store in result 
+  //     parser.parseString(data, function(err, result) {
+  //       that.myAgenciesRaw = result;      
+  //       that.myAgenciesRaw.body.agency.forEach(function(item) {
+  //         if (agencyID == item.$.tag) {
+  //           that.myAgencies.push({
+  //             myAgenciesNames : item.$.title, 
+  //             myAgenciesTags : item.$.tag, selected : 'yes'
+  //           });
+  //         } else {
+  //           that.myAgencies.push({
+  //             myAgenciesNames : item.$.title, 
+  //             myAgenciesTags : item.$.tag
+  //           });
+  //         }
+  //       });
+  //       that.myAggregateData.push({myAgencies:that.myAgencies});
+  //       // inspect(that.myAgencies);
+  //       callback();
+  //     });
+  //   });
+  // }
+}
+
+/**
+ * @public
  * @description: Requests list of routes from nextBus
  * @param url: The url of the api that provides a list of routes available
  * @param routeID: The route id (optional) taken from the url
@@ -244,7 +423,7 @@ PublicTransit.prototype.routeRequest = function (url, routeID, callback) {
   var that = this;
   var argumentsMain = arguments.length;
 
-  if (argumentsMain == 2) {
+  if (argumentsMain == 2 && routeID!="mobile") {
     callback = routeID;
     this.dataRequests(url, function(data) {
       console.log("inside routeRequest/dataRequests");
@@ -288,6 +467,44 @@ PublicTransit.prototype.routeRequest = function (url, routeID, callback) {
 
 /**
  * @public
+ * @description: Requests list of routes from nextBus
+ * @param url: The url of the api that provides a list of routes available
+ * @param routeID: The route id (optional) taken from the url
+**/
+PublicTransit.prototype.routeRequestMobile = function (url, callback) {
+  var that = this;
+  var argumentsMain = arguments.length;
+  that.myRouts = [];
+
+
+    this.dataRequests(url, function(data) {
+      // converts xml to json and store in result 
+      parser.parseString(data, function(err, result) {
+        that.myRoutsRaw = result;
+        var initialTag = 0;
+
+        that.myRoutsRaw.body.route.forEach(function(item) {
+          if (initialTag==0) {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myRoutsTags : item.$.tag, selected : 'yes'
+            });
+          } else {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myRoutsTags : item.$.tag
+            });
+          }
+          initialTag++;
+        });
+        that.myAggregateData.push({myRouts:that.myRouts});   
+        // inspect(that.myRouts);
+        callback();     
+      });
+    }); 
+
+}
+
+/**
+ * @public
  * @description: Requests list of Directions and Stops from nextBus
  * @param url: The url of the api that provides a list of directions and stops available
  * @param directionID: The directions id (optional) taken from the url
@@ -297,7 +514,7 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
   var that = this;
   var argumentsMain = arguments.length;
 
-  if (argumentsMain == 2) {
+  if (argumentsMain == 2 && directionID!="mobile") {
     callback = directionID;
     this.dataRequests(url, function(data) {
       // console.log("inside directionsStopsRequest/dataRequests");
@@ -327,7 +544,7 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
         callback();
       });
     }); 
-  } else if (argumentsMain == 3) {
+  } else if (argumentsMain == 3 && directionID!="mobile") {
     callback = stopID;
     this.dataRequests(url, function(data) {
       // console.log("inside directionsStopsRequest/dataRequests");
@@ -358,6 +575,10 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
       });
     }); 
   } else {
+    if (directionID=="mobile") {
+      callback = stopID;
+    };
+
     this.dataRequests(url, function(data) {
       // console.log("inside directionsStopsRequest/dataRequests");
       // converts xml to json and store in result 
@@ -367,7 +588,8 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
           if (directionID == item.$.tag) {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
-              myDirectionsTags : item.$.tag, selected : 'yes'
+              myDirectionsTags : item.$.tag, 
+              selected : 'yes'
             });
           } else {
             that.myDirections.push({                  
@@ -377,7 +599,7 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
           }
         });
         that.myAggregateData.push({myDirections:that.myDirections});
-        // inspect(myAggregateData);
+        // inspect(that.myAggregateData);
 
         that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
           if (directionID == itemDirection.$.tag) { // finding the correct direction
@@ -389,7 +611,8 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
                   if (item.$.tag == stopID) {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      myStopsTags : item.$.tag, selected : 'yes'
+                      myStopsTags : item.$.tag, 
+                      selected : 'yes'
                     });
                   } else {
                     that.myStops.push({
@@ -404,7 +627,7 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
         });
 
         that.myAggregateData.push({myStops:that.myStops});
-        // inspect(myAggregateData);
+        // inspect(that.myAggregateData);
         callback();
       });
     });
@@ -413,11 +636,188 @@ PublicTransit.prototype.directionsStopsRequest = function (url, directionID, sto
 
 /**
  * @public
+ * @description: Requests list of Directions and Stops from nextBus
+ * @param url: The url of the api that provides a list of directions and stops available
+ * @param directionID: The directions id (optional) taken from the url
+ * @param stopID: The stop id (optional) taken from the url
+**/
+PublicTransit.prototype.directionsRequestMobile = function (url, direction, callback) {
+  var that = this;
+  var argumentsMain = arguments.length;  
+  that.myDirections = [];
+
+    this.dataRequests(url, function(data) {
+      // converts xml to json and store in result 
+      parser.parseString(data, function(err, result) {
+        that.myDirectionsRaw = result;
+        var initialTag=0;
+        var selectedDirection='';
+
+        that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
+          if (item.$.tag == direction) {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myDirectionsTags : item.$.tag, 
+              selected : 'yes'
+            });
+          } else {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myDirectionsTags : item.$.tag                  
+            });
+          }
+          initialTag++;
+        });
+        that.myAggregateData.push({myDirections:that.myDirections});
+        // inspect(that.myDirections);
+        callback();
+      });
+    });  
+}
+
+/**
+ * @public
+ * @description: Requests list of Directions and Stops from nextBus
+ * @param url: The url of the api that provides a list of directions and stops available
+ * @param directionID: The directions id (optional) taken from the url
+ * @param stopID: The stop id (optional) taken from the url
+**/
+PublicTransit.prototype.stopsRequestMobile = function (url, direction, callback) {
+  var that = this;
+  var argumentsMain = arguments.length;  
+  that.myStops = [];
+
+    this.dataRequests(url, function(data) {
+      // converts xml to json and store in result 
+      parser.parseString(data, function(err, result) {
+        that.myDirectionsRaw = result;
+        var initialTag=0;
+        var selectedDirection='';
+
+        that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
+          if (itemDirection.$.tag == direction) { // finding the correct direction
+            initialTag = 0;
+            itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction
+              // inspect(item);           
+              that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
+                // inspect(itemStop.$.title);
+                if (itemStop.$.tag == item.$.tag) {
+                  if (initialTag == 0) {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myStopsTags : item.$.tag, 
+                      selected : 'yes'
+                    });
+                    
+                  } else {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myStopsTags : item.$.tag
+                    });
+                    
+                  }
+                  initialTag++;
+                }
+              });
+            });
+          }
+        });
+
+        that.myAggregateData.push({myStops:that.myStops});
+        // inspect(that.myStops);
+        callback();
+      });
+    }); 
+}
+
+/**
+ * @public
+ * @description: Requests list of Directions and Stops from nextBus
+ * @param url: The url of the api that provides a list of directions and stops available
+ * @param directionID: The directions id (optional) taken from the url
+ * @param stopID: The stop id (optional) taken from the url
+**/
+PublicTransit.prototype.directionsStopsRequestMobile = function (url, callback) {
+  var that = this;
+  var argumentsMain = arguments.length;  
+  that.myDirections = [];
+  that.myStops = [];
+
+    this.dataRequests(url, function(data) {
+      // converts xml to json and store in result 
+      parser.parseString(data, function(err, result) {
+        that.myDirectionsRaw = result;
+        var initialTag=0;
+        var selectedDirection='';
+
+        that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
+          if (initialTag==0) {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myDirectionsTags : item.$.tag, 
+              selected : 'yes'
+            });
+            selectedDirection=item.$.tag;
+          } else {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myDirectionsTags : item.$.tag                  
+            });
+          }
+          initialTag++;
+        });
+        that.myAggregateData.push({myDirections:that.myDirections});
+        // inspect(that.myDirections);
+
+        that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
+          if (itemDirection.$.tag == selectedDirection) { // finding the correct direction
+            initialTag = 0;
+            itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction
+              // inspect(item);           
+              that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
+                // inspect(itemStop.$.title);
+                if (itemStop.$.tag == item.$.tag) {
+                  if (initialTag == 0) {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myStopsTags : item.$.tag, 
+                      selected : 'yes'
+                    });
+                    
+                  } else {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myStopsTags : item.$.tag
+                    });
+                    
+                  }
+                  initialTag++;
+                }
+              });
+            });
+          }
+        });
+
+        that.myAggregateData.push({myStops:that.myStops});
+        // inspect(that.myStops);
+        callback();
+      });
+    });
+
+
+
+  
+}
+
+
+/**
+ * @public
  * @description: Requests list of predictions from nextBus
  * @param url: The url of the api that provides a list of predictions available
 **/
 PublicTransit.prototype.predictionsRequest = function (url, callback) {
   var that = this;
+  that.myPredictions=[];
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
@@ -436,7 +836,7 @@ PublicTransit.prototype.predictionsRequest = function (url, callback) {
         });                    
         that.myAggregateData.push({myPredictions:that.myPredictions});                    
       }
-      // inspect(myAggregateData);
+      // inspect(that.myPredictions);
       callback();
     });
   });
