@@ -1,0 +1,35 @@
+extends layout
+
+block content
+	.container
+		.hero-unit
+			h1 SEARCH Page:
+
+		//-input#search(type="search", placeholder="Enter bus number")
+		#dropdowns
+			#agency
+				p agency
+				select#agencyList.form-control
+					include optionsTemplate.html
+			#route
+				p route
+				select#routeList.form-control
+					include routeTemplate.html
+			#direction
+				p direction
+				select#directionList.form-control
+					include directionTemplate.html
+			#stop
+				p stop
+				select#stopList.form-control
+					include stopsTemplate.html
+		
+		ul#results
+		include template.html
+		#predictions
+		include predictionsTemplate.html
+
+		script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+		script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
+		script(src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
+		script(src="/javascripts/search.js")

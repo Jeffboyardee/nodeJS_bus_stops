@@ -3,9 +3,9 @@
 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 {{#each myAgencies}}
     {{#if selected.length}}
-    	<li role="presentation" id="{{myAgenciesTags}}" selected><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
+    	<li role="presentation" id="{{myTags}}" selected><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
     {{else}}
-    	<li role="presentation" id="{{myAgenciesTags}}"><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
+    	<li role="presentation" id="{{myTags}}"><a role="menuitem" tabindex="-1" href="#">{{myAgenciesNames}}</a></li>
     {{/if}}
 {{/each}}
 </ul>
@@ -15,9 +15,9 @@
 <script id="data-results" type="text/x-handlebars-template">
 {{#each myAgencies}}
 	{{#if selected.length}}
-    	<option id="{{myAgenciesTags}}" selected>{{myAgenciesNames}}</option>
+    	<option id="{{myTags}}" selected>{{myAgenciesNames}}</option>
     {{else}}
-    	<option id="{{myAgenciesTags}}">{{myAgenciesNames}}</option>
+    	<option id="{{myTags}}">{{myAgenciesNames}}</option>
     {{/if}}
 {{/each}}
 </script>

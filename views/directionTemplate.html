@@ -1,9 +1,9 @@
 <script id="direction-results" type="text/x-handlebars-template">
 {{#each myDirections}}
 	{{#if selected.length}}
-    	<option id="{{myDirectionsTags}}" selected>{{myDirectionsNames}}</option>
+    	<option id="{{myTags}}" selected>{{myDirectionsNames}}</option>
     {{else}}
-    	<option id="{{myDirectionsTags}}">{{myDirectionsNames}}</option>
+    	<option id="{{myTags}}">{{myDirectionsNames}}</option>
     {{/if}}
 {{/each}}
 </script>

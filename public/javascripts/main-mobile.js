@@ -19,7 +19,7 @@ $(function(){
 	$stopList = $('#stopList');
 	$predictions = $('#predictions');
 
-	$.post('/agencySearch-mobile', function(data) {
+	$.post('/mobile/agencySearch-mobile', function(data) {
 		$agencyList.html( optionsTemplate(data[0]) );
 		$routeList.html( routeTemplate(data[1]) );
 		$directionList.html( directionTemplate(data[2]) );	
@@ -30,12 +30,12 @@ $(function(){
 	$( "#agencyList" ).change(function() {
 		var parameters = { agency: $('#agencyList option:selected').attr('id') };
 
-		$.post('/agencySearchMobile-change-agency', parameters, function(data) {
+		$.post('/mobile/agencySearchMobile-change-agency', parameters, function(data) {
 			console.log("success from server");
-			$routeList.html( routeTemplate(data[0]) );
-			$directionList.html( directionTemplate(data[1]) );	
-			$stopList.html( stopsTemplate(data[2]) );	
-			$predictions.html( predictionsTemplate(data[3]) );
+			$routeList.html( routeTemplate(data[1]) );
+			$directionList.html( directionTemplate(data[2]) );	
+			$stopList.html( stopsTemplate(data[3]) );	
+			$predictions.html( predictionsTemplate(data[4]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -48,11 +48,11 @@ $(function(){
 			route: $('#routeList option:selected').attr('id') 
 		};
 
-		$.post('/agencySearchMobile-change-route', parameters, function(data) {
+		$.post('/mobile/agencySearchMobile-change-route', parameters, function(data) {
 			console.log("success from server");
-			$directionList.html( directionTemplate(data[0]) );	
-			$stopList.html( stopsTemplate(data[1]) );	
-			$predictions.html( predictionsTemplate(data[2]) );
+			$directionList.html( directionTemplate(data[2]) );	
+			$stopList.html( stopsTemplate(data[3]) );	
+			$predictions.html( predictionsTemplate(data[4]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -66,10 +66,10 @@ $(function(){
 			direction: $('#directionList option:selected').attr('id') 
 		};
 
-		$.post('/agencySearchMobile-change-direction', parameters, function(data) {
+		$.post('/mobile/agencySearchMobile-change-direction', parameters, function(data) {
 			console.log("success from server");
-			$stopList.html( stopsTemplate(data[1]) );	
-			$predictions.html( predictionsTemplate(data[2]) );
+			$stopList.html( stopsTemplate(data[3]) );	
+			$predictions.html( predictionsTemplate(data[4]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -84,9 +84,9 @@ $(function(){
 			stop: $('#stopList option:selected').attr('id')
 		};
 
-		$.post('/agencySearchMobile-change-stop', parameters, function(data) {
+		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
 			console.log("success from server");
-			$predictions.html( predictionsTemplate(data[0]) );
+			$predictions.html( predictionsTemplate(data[4]) );
 		})
 		.fail(function() {
 			console.log("error from server");

@@ -31,7 +31,7 @@ $(function(){
 		if(e.keyCode === 13) {
 		 var parameters = { search: $(this).val() };
 
-			$.get('/searching', parameters, function(data){
+			$.get('/desktop/searching', parameters, function(data){
 				console.log("test parameters here-> "+data);
 			    if (data instanceof Array) {
 			    	$results.html( dataTemplate({resultsArray:data}) );	
@@ -45,12 +45,12 @@ $(function(){
 	$( "#agencyList" ).change(function() {
 		var parameters = { agency: $('#agencyList option:selected').attr('id') };
 
-		$.get('/agencySearchRoute', parameters, function(data) {
+		$.get('/desktop/agencySearchRoute', parameters, function(data) {
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
 				tempString3 = data["stopsName"];
-			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
+			window.location.replace("/desktop/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
 	});
 	$( "#routeList" ).change(function() {
@@ -59,12 +59,12 @@ $(function(){
 			route: $('#routeList option:selected').attr('id') 
 		};
 
-		$.get('/routeSearchDirection', parameters, function(data) {
+		$.get('/desktop/routeSearchDirection', parameters, function(data) {
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
 				tempString3 = data["stopsName"];
-			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
+			window.location.replace("/desktop/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
 	});
 	$( "#directionList" ).change(function() {
@@ -74,12 +74,12 @@ $(function(){
 			direction: $('#directionList option:selected').attr('id') 
 		};
 
-		$.get('/directionSearchStop', parameters, function(data) {
+		$.get('/desktop/directionSearchStop', parameters, function(data) {
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
 				tempString3 = data["stopsName"];
-			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
+			window.location.replace("/desktop/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
 	});	
 	$('#stopList').change(function() {
@@ -90,12 +90,12 @@ $(function(){
 			stop: $('#stopList option:selected').attr('id')
 		};
 
-		$.get('/stopSearchPrediction', parameters, function(data) {
+		$.get('/desktop/stopSearchPrediction', parameters, function(data) {
 			var tempString = data["agencyName"],
 				tempString1 = data["routeName"],
 				tempString2 = data["directionName"],
 				tempString3 = data["stopsName"];
-			window.location.replace("/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
+			window.location.replace("/desktop/agencies/"+tempString+"/"+tempString1+"/"+tempString2+"/"+tempString3);
 		});
 	});
 });
