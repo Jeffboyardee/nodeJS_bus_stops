@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session')
 var bodyParser = require('body-parser');
 
 var routes_desktop = require('./routes/desktop');
@@ -16,7 +17,11 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
-app.use(cookieParser());
+app.use(cookieParser("public_transport"));
+app.use(cookieSession({
+  key: 'jeff',
+  secret: "superjeff",   
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/desktop', routes_desktop);
 app.use('/mobile', routes_mobile);

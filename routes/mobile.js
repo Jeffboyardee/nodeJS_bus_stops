@@ -22,6 +22,7 @@ router.get('/',  function(req, res){
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearch-mobile', function(req, res) {    
+  inspect(req.cookies);
   if (pt.myAggregateData.length==0) {
     pt.agencyRequestMobile(pt.agencyListUrl, function(data) {
       pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, function(data) {
