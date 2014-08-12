@@ -1,10 +1,14 @@
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var cookieSession = require('cookie-session')
-var bodyParser = require('body-parser');
 
+
+var cookieParser = require('cookie-parser');
+// var cookieSession = require('cookie-session');
+// var session = require('express-session');
+var session = require("client-sessions");
+
+var bodyParser = require('body-parser');
 var routes_desktop = require('./routes/desktop');
 var routes_mobile = require('./routes/mobile');
 var app = express();
@@ -17,11 +21,19 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
-app.use(cookieParser("public_transport"));
-app.use(cookieSession({
-  key: 'jeff',
-  secret: "superjeff",   
+app.use(cookieParser("public_transportation"));
+// app.use(cookieSession( {name: "mySession", secret: "superjeff", cookies: {maxAge: 10000}} ));
+// app.use(session( {secret: "superjeff", cookie: {maxAge: 1000}} ));
+
+app.use(session({
+  cookieName: 'mySession', // cookie name dictates the key name added to the request object
+  secret: 'blargadeeblargblarg', // should be a large unguessable string
+  duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+  activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
 }));
+
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/desktop', routes_desktop);
 app.use('/mobile', routes_mobile);

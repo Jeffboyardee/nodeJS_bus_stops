@@ -4,14 +4,29 @@ var request = require('request');
 var xml2js = require('xml2js');
 var parser = new xml2js.Parser();
 var inspect = require('eyes').inspector({maxLength: false});
-var pt = new PublicTransit();
+var pt = '';
+pt = new PublicTransit();
 
 // route middleware that will happen on every request
 router.use(function(req, res, next) {
 
+  // cookies test
+  inspect(req.cookies);
+
+  if (req.mySession.seenyou) {
+    console.log('Been here, done that.');
+    inspect("This is in the cookie->"+req.mySession.agencyCookie);
+    inspect("This is in the cookie->"+req.mySession.routeCookie);
+    inspect("This is in the cookie->"+req.mySession.directionCookie);
+    inspect("This is in the cookie->"+req.mySession.stopCookie);
+  } else {
+    // setting a property will automatically cause a Set-Cookie response
+    // to be sent
+    console.log('First time visiting');
+  }
+
   // log each request to the console
   console.log(req.method, req.url);
-
   // continue doing what we were doing and go to the route
   next(); 
 });
@@ -21,34 +36,71 @@ router.get('/',  function(req, res){
 });
 
 /* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearch-mobile', function(req, res) {    
-  inspect(req.cookies);
-  if (pt.myAggregateData.length==0) {
-    pt.agencyRequestMobile(pt.agencyListUrl, function(data) {
-      pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, function(data) {
-        pt.directionsStopsRequestMobile(pt.directionListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags, function(data) {
+router.post('/agencySearch-mobile', function(req, res) {      
+  var tempAgency='', 
+      tempRoute='',
+      tempDirection='',
+      tempStop=''; 
+
+  // if (req.mySession.seenyou) {
+  //   console.log("if is true, cookie data: "+req.mySession.agencyCookie);
+    
+  //   tempAgency=req.mySession.agencyCookie;
+  //   tempRoute=req.mySession.routeCookie;
+  //   tempDirection=req.mySession.directionCookie;
+  //   tempStop=req.mySession.stopCookie;
+
+  //   console.log("here?");
+
+  //   pt.myAgencies=[];
+  //   pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
+  //     // pt.arrayEditAll({"myAgencies" : tempAgency});
+  //     pt.myRouts=[];
+  //     pt.routeRequestMobile(pt.routeListUrl+tempAgency, req, function(data) {
+  //       // pt.arrayEditAll({"myRouts" : tempRoute});
+  //       pt.myDirections=[];
+  //       pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
+  //         // pt.arrayEditAll({"myDirections" : tempDirection});
+  //         pt.myStops=[];
+  //         pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
+  //           // pt.arrayEditAll({"myStops" : tempStop});
+  //           pt.myPredictions=[];
+  //           pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
+  //             inspect(pt.myAggregateData);
+  //             res.send(pt.myAggregateData);
+  //           });
+  //         }); // END requesting stops
+  //       }); // END requesting directions
+  //     }); // END requesting route
+  //   }); // END requesting agency
+  // } else {
+    pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
+      pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, req, function(data) {
+        pt.directionsStopsRequestMobile(pt.directionListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags, req, function(data) {
           pt.predictionsRequest(pt.stopListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
             res.send(pt.myAggregateData);
           });
         }); // END requesting direction
       }); // END requesting route
     }); // END requesting agency
-  } else {
-    res.send(pt.myAggregateData);
-  }
+  //   req.mySession.seenyou = true;    
+  // }
 });
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-agency', function(req, res) {  
+  
+  // req.session = null; 
     var agency = req.body.agency;
     console.log("agency change: "+agency);    
     pt.arrayEdit({"myAgencies" : agency});
+    // req.mySession.agencyCookie=agency;
 
     pt.myRouts=[];
-    pt.routeRequestMobile(pt.routeListUrl+agency, function(data) {
+    pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
       pt.myDirections=[];
       pt.myStops=[];
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, function(data) {
+      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {
         pt.myPredictions=[];
         pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
           res.send(pt.myAggregateData);
@@ -65,10 +117,12 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
     console.log("route change: "+route);
     pt.arrayEdit({"myAgencies" : agency,
                   "myRouts" : route});
+    req.mySession.agencyCookie=agency;
+    req.mySession.routeCookie=route;
 
       pt.myDirections=[];
       pt.myStops=[];
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, function(data) {
+      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
         pt.myPredictions=[];
         pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
           res.send(pt.myAggregateData);
@@ -86,9 +140,12 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
     pt.arrayEdit({"myAgencies" : agency,
                   "myRouts" : route,
                   "myDirections" : direction});
+    req.mySession.agencyCookie=agency;
+    req.mySession.routeCookie=route;
+    req.mySession.directionCookie=direction;
 
     pt.myStops=[];
-    pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, direction, function(data) {
+    pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, direction, req, function(data) {
       pt.myPredictions=[];
       pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
         res.send(pt.myAggregateData);
@@ -107,6 +164,10 @@ router.post('/agencySearchMobile-change-stop', function(req, res) {
                   "myRouts" : route,
                   "myDirections" : direction,
                   "myStops" : stop});
+    req.mySession.agencyCookie=agency;
+    req.mySession.routeCookie=route;
+    req.mySession.directionCookie=direction;
+    req.mySession.stopCookie=stop;
 
     pt.myPredictions=[];
     pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+stop+"&useShortTitles=true", function(data) {
@@ -165,6 +226,22 @@ function addSelected(arr, tag) {
   }
 }
 
+PublicTransit.prototype.getJSONSectionFromArray = function (arraySectionTitleStr) {
+  var outputArraySec=[];
+  // var outputArraySecTitle=arraySectionTitleStr;
+  inspect(this.myAggregateData.length);
+  for (var i=0, tempData=this.myAggregateData.length; i<tempData; i++) {
+    for (name in this.myAggregateData[i]) {
+       if (name == arraySectionTitleStr) {
+        inspect("found a match in the array----> "+name)
+        outputArraySec = this.myAggregateData[i][name];
+        // inspect(outputArraySec);
+        return outputArraySec;
+       }
+    }
+  }
+}
+
 /** 
  * PublicTransit class Constructor
 **/
@@ -205,18 +282,71 @@ PublicTransit.prototype.arrayEdit = function (objOfarraysTokeep) {
 
   for(var arrayToKeep in objOfarraysTokeep) {
     tempStr=arrayToKeep+"";
-    this['arrayToKeep'] = this.myAggregateData.shift();
 
-    var tempObj = removeSelected(this['arrayToKeep'][tempStr]);
+    this['arrayToKeep'] = this.myAggregateData.shift();
+inspect(this['arrayToKeep']);
+    var tempObj = removeSelected(this[arrayToKeep]);
     delete tempObj.selected;
 
-    var tempObj1 = addSelected(this['arrayToKeep'][tempStr], objOfarraysTokeep[arrayToKeep]);
+    var tempObj1 = addSelected(this[arrayToKeep], objOfarraysTokeep[arrayToKeep]);
+    inspect("returning the object to add selected");
+    inspect(tempObj1);
     tempObj1['selected']='yes';
     tempArray.push(this['arrayToKeep']);
   }
 
   this.myAggregateData = [];
   this.myAggregateData = tempArray;
+  inspect(this.myAggregateData);
+  inspect("arrayEdit finished");
+}
+
+/**
+ * @public
+ * @description: Takes a collection of tags the user didn't edit, then loop through
+ * each tag and save the arrays into tempArray, and set that as the new myAggregateData array. 
+ * @param objOfarraysTokeep: An object of tags that have been selected by the user
+**/
+PublicTransit.prototype.arrayEditAll = function (objOfarraysTokeep) {
+  var tempArray = [];
+  var tempStr = '';
+  
+
+  for(var arrayToKeep in objOfarraysTokeep) {
+    tempStr=arrayToKeep+"";
+    inspect("inside arrayEdit: "+tempStr);
+    
+    this[arrayToKeep] = this.getJSONSectionFromArray(tempStr);
+
+    var tempObj = removeSelected(this[arrayToKeep]);
+    delete tempObj.selected;
+
+    var tempObj1 = addSelected(this[arrayToKeep], objOfarraysTokeep[arrayToKeep]);
+    inspect("returning the object to add selected");    
+    tempObj1['selected']='yes';
+    inspect(tempObj1);
+
+    
+    switch (tempStr) {
+      case 'myAgencies':
+      this.myAgencies=[];
+      this.myAggregateData.push({myAgencies: this[arrayToKeep]});
+      break;
+      case 'myRouts':
+      this.myAggregateData.push({myRoutes: this[arrayToKeep]});
+      break;
+      case 'myDirections':
+      this.myAggregateData.push({myDirections: this[arrayToKeep]});
+      break;
+      case 'myStops':
+      this.myAggregateData.push({myStops: this[arrayToKeep]});
+      break;
+    }
+  }
+
+  inspect("arrayEdit almost finished");
+  inspect(this.myAggregateData);
+  inspect("arrayEdit finished");
 }
 
 /**
@@ -236,9 +366,8 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
  * @param url: The url of the api that provides a list of agencies available
  * @param agencyID: The agency id (optional) taken from the url
 **/
-PublicTransit.prototype.agencyRequestMobile = function (url, callback) {
+PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
   var that = this;
-  var argumentsMain = arguments.length;
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
@@ -251,6 +380,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, callback) {
             myAgenciesNames : item.$.title, 
             myTags : item.$.tag, selected : 'yes'
           });
+          req.mySession.agencyCookie=item.$.tag;
         } else {
           that.myAgencies.push({
             myAgenciesNames : item.$.title, 
@@ -272,7 +402,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, callback) {
  * @param url: The url of the api that provides a list of routes available
  * @param routeID: The route id (optional) taken from the url
 **/
-PublicTransit.prototype.routeRequestMobile = function (url, callback) {
+PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
@@ -286,6 +416,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, callback) {
           that.myRouts.push({
             myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
           });
+          req.mySession.routeCookie=item.$.tag;
         } else {
           that.myRouts.push({
             myRoutsNames : item.$.title, myTags : item.$.tag
@@ -307,7 +438,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, callback) {
  * @param directionID: The directions id (optional) taken from the url
  * @param stopID: The stop id (optional) taken from the url
 **/
-PublicTransit.prototype.directionsRequestMobile = function (url, direction, callback) {
+PublicTransit.prototype.directionsRequestMobile = function (url, direction, req, callback) {
   var that = this;
 
     this.dataRequests(url, function(data) {
@@ -324,6 +455,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, call
               myTags : item.$.tag, 
               selected : 'yes'
             });
+            req.mySession.directionCookie=item.$.tag;
           } else {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
@@ -347,7 +479,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, call
  * @param directionID: The directions id (optional) taken from the url
  * @param stopID: The stop id (optional) taken from the url
 **/
-PublicTransit.prototype.stopsRequestMobile = function (url, direction, callback) {
+PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, callback) {
   var that = this;
 
     this.dataRequests(url, function(data) {
@@ -369,6 +501,7 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, callback)
                       myTags : item.$.tag, 
                       selected : 'yes'
                     });
+                    req.mySession.stopCookie=item.$.tag;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
@@ -397,7 +530,7 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, callback)
  * @param directionID: The directions id (optional) taken from the url
  * @param stopID: The stop id (optional) taken from the url
 **/
-PublicTransit.prototype.directionsStopsRequestMobile = function (url, callback) {
+PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
@@ -414,6 +547,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, callback) 
             myTags : item.$.tag, 
             selected : 'yes'
           });
+          req.mySession.directionCookie=item.$.tag;
           selectedDirection=item.$.tag;
         } else {
           that.myDirections.push({                  
@@ -437,6 +571,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, callback) 
                     myTags : item.$.tag, 
                     selected : 'yes'
                   });
+                  req.mySession.stopCookie=item.$.tag;
                 } else {
                   that.myStops.push({
                     myStopsNames : itemStop.$.title, 
