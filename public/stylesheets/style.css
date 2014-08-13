@@ -21,3 +21,13 @@ a {
 #dropdowns p {
 	display: inline-block;
 }
+
+#loading {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: url('/images/ajax-loader.gif') no-repeat center;
+}
