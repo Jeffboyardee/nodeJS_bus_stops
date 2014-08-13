@@ -2,31 +2,39 @@ extends layout
 
 block content
 	.container
-		.hero-unit
+		.page-header
 			h1 SEARCH Page:
 
 		//-input#search(type="search", placeholder="Enter bus number")
 		#dropdowns
-			#agency
-				p agency
-				select#agencyList.form-control
-					include optionsTemplate.html
-			#route
-				p route
-				select#routeList.form-control
-					include routeTemplate.html
-			#direction
-				p direction
-				select#directionList.form-control
-					include directionTemplate.html
-			#stop
-				p stop
-				select#stopList.form-control
-					include stopsTemplate.html
+			#agency.row
+				div.col-xs-2
+					div.name agency
+				div.col-xs-10
+					select#agencyList.form-control.btn.btn-lg.btn-default
+						include optionsTemplate.html
+			#route.row
+				div.col-xs-2
+					div.name route
+				div.col-xs-10
+					select#routeList.form-control.btn.btn-lg.btn-default
+						include routeTemplate.html
+			#direction.row
+				div.col-xs-2
+					div.name direction
+				div.col-xs-10
+					select#directionList.form-control.btn.btn-lg.btn-default
+						include directionTemplate.html
+			#stop.row
+				div.col-xs-2
+					div.name stop
+				div.col-xs-10
+					select#stopList.form-control.btn.btn-lg.btn-default
+						include stopsTemplate.html
 		
 		ul#results
 		include template.html
-		#predictions
+		#predictions.alert.alert-info
 		include predictionsTemplate.html
 		.row
 			#loading
