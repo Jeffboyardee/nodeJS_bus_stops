@@ -32,10 +32,10 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-agency', parameters, function(data) {
 			console.log("success from server");
-			$routeList.html( routeTemplate(data[1]) );
-			$directionList.html( directionTemplate(data[2]) );	
-			$stopList.html( stopsTemplate(data[3]) );	
-			$predictions.html( predictionsTemplate(data[4]) );
+			$routeList.html( routeTemplate(data[0]) );
+			$directionList.html( directionTemplate(data[1]) );	
+			$stopList.html( stopsTemplate(data[2]) );	
+			$predictions.html( predictionsTemplate(data[3]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -50,9 +50,9 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-route', parameters, function(data) {
 			console.log("success from server");
-			$directionList.html( directionTemplate(data[2]) );	
-			$stopList.html( stopsTemplate(data[3]) );	
-			$predictions.html( predictionsTemplate(data[4]) );
+			$directionList.html( directionTemplate(data[0]) );	
+			$stopList.html( stopsTemplate(data[1]) );	
+			$predictions.html( predictionsTemplate(data[2]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -68,8 +68,8 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-direction', parameters, function(data) {
 			console.log("success from server");
-			$stopList.html( stopsTemplate(data[3]) );	
-			$predictions.html( predictionsTemplate(data[4]) );
+			$stopList.html( stopsTemplate(data[0]) );	
+			$predictions.html( predictionsTemplate(data[1]) );
 		})
 		.fail(function() {
 			console.log("error from server");
@@ -86,7 +86,7 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
 			console.log("success from server");
-			$predictions.html( predictionsTemplate(data[4]) );
+			$predictions.html( predictionsTemplate(data[0]) );
 		})
 		.fail(function() {
 			console.log("error from server");

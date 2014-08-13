@@ -42,38 +42,40 @@ router.post('/agencySearch-mobile', function(req, res) {
       tempDirection='',
       tempStop=''; 
 
-  // if (req.mySession.seenyou) {
-  //   console.log("if is true, cookie data: "+req.mySession.agencyCookie);
+  if (req.mySession.seenyou) {
+    console.log("if is true, cookie data: "+req.mySession.agencyCookie);
     
-  //   tempAgency=req.mySession.agencyCookie;
-  //   tempRoute=req.mySession.routeCookie;
-  //   tempDirection=req.mySession.directionCookie;
-  //   tempStop=req.mySession.stopCookie;
+    tempAgency=req.mySession.agencyCookie;
+    tempRoute=req.mySession.routeCookie;
+    tempDirection=req.mySession.directionCookie;
+    tempStop=req.mySession.stopCookie;
 
-  //   console.log("here?");
+    console.log("here?");
 
-  //   pt.myAgencies=[];
-  //   pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
-  //     // pt.arrayEditAll({"myAgencies" : tempAgency});
-  //     pt.myRouts=[];
-  //     pt.routeRequestMobile(pt.routeListUrl+tempAgency, req, function(data) {
-  //       // pt.arrayEditAll({"myRouts" : tempRoute});
-  //       pt.myDirections=[];
-  //       pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
-  //         // pt.arrayEditAll({"myDirections" : tempDirection});
-  //         pt.myStops=[];
-  //         pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
-  //           // pt.arrayEditAll({"myStops" : tempStop});
-  //           pt.myPredictions=[];
-  //           pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
-  //             inspect(pt.myAggregateData);
-  //             res.send(pt.myAggregateData);
-  //           });
-  //         }); // END requesting stops
-  //       }); // END requesting directions
-  //     }); // END requesting route
-  //   }); // END requesting agency
-  // } else {
+    pt = null;
+    pt = new PublicTransit();
+    pt.myAgencies=[];
+    pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
+      // pt.arrayEdit({"myAgencies" : tempAgency});    
+      pt.myRouts=[];
+      pt.routeRequestMobile(pt.routeListUrl+tempAgency, req, function(data) {
+        // pt.arrayEdit({"myRouts" : tempRoute});
+        pt.myDirections=[];
+        pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
+          // pt.arrayEdit({"myDirections" : tempDirection});
+          pt.myStops=[];
+          pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
+            // pt.arrayEdit({"myStops" : tempStop});
+            pt.myPredictions=[];
+            pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
+              inspect(pt.myAggregateData);
+              res.send(pt.myAggregateData);
+            });
+          }); // END requesting stops
+        }); // END requesting directions
+      }); // END requesting route
+    }); // END requesting agency
+  } else {
     pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
       pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, req, function(data) {
         pt.directionsStopsRequestMobile(pt.directionListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags, req, function(data) {
@@ -83,8 +85,8 @@ router.post('/agencySearch-mobile', function(req, res) {
         }); // END requesting direction
       }); // END requesting route
     }); // END requesting agency
-  //   req.mySession.seenyou = true;    
-  // }
+    req.mySession.seenyou = true;    
+  }
 });
 
 /* POST home page and redirect to dynamic url for mobile */
@@ -93,19 +95,26 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
   // req.session = null; 
     var agency = req.body.agency;
     console.log("agency change: "+agency);    
-    pt.arrayEdit({"myAgencies" : agency});
-    // req.mySession.agencyCookie=agency;
+    // pt.arrayEdit({"myAgencies" : agency});
+    req.mySession.agencyCookie=agency;
+    req.mySession.routeCookie=null;
+    req.mySession.directionCookie=null;
+    req.mySession.stopCookie=null;
 
+    pt = null;
+    pt = new PublicTransit();
     pt.myRouts=[];
     pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
       pt.myDirections=[];
       pt.myStops=[];
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {
-        pt.myPredictions=[];
-        pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-          res.send(pt.myAggregateData);
-        });
-      }); // END requesting direction
+      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {  
+          pt.myPredictions=[];
+          pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
+            inspect("This is what myAggregateData looks like after agency change by user->");
+            inspect(pt.myAggregateData);
+            res.send(pt.myAggregateData);
+          });
+      }); // END requesting direction and stops
     }); // END requesting route
 
 });
@@ -115,8 +124,8 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
     var agency = req.body.agency;
     var route = req.body.route;
     console.log("route change: "+route);
-    pt.arrayEdit({"myAgencies" : agency,
-                  "myRouts" : route});
+    // pt.arrayEdit({"myAgencies" : agency,
+                  // "myRouts" : route});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
 
@@ -137,9 +146,9 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
     var route = req.body.route;
     var direction = req.body.direction;
     console.log("route direction: "+direction);
-    pt.arrayEdit({"myAgencies" : agency,
-                  "myRouts" : route,
-                  "myDirections" : direction});
+    // pt.arrayEdit({"myAgencies" : agency,
+    //               "myRouts" : route,
+    //               "myDirections" : direction});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
@@ -160,10 +169,10 @@ router.post('/agencySearchMobile-change-stop', function(req, res) {
     var direction = req.body.direction;
     var stop = req.body.stop;
     console.log("change stop: "+stop);
-    pt.arrayEdit({"myAgencies" : agency,
-                  "myRouts" : route,
-                  "myDirections" : direction,
-                  "myStops" : stop});
+    // pt.arrayEdit({"myAgencies" : agency,
+    //               "myRouts" : route,
+    //               "myDirections" : direction,
+    //               "myStops" : stop});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
@@ -283,21 +292,42 @@ PublicTransit.prototype.arrayEdit = function (objOfarraysTokeep) {
   for(var arrayToKeep in objOfarraysTokeep) {
     tempStr=arrayToKeep+"";
 
-    this['arrayToKeep'] = this.myAggregateData.shift();
-inspect(this['arrayToKeep']);
+    switch (tempStr) {
+      case 'myAgencies':
+      this[arrayToKeep] = this.myAggregateData[0];
+      // this.myAggregateData.push({myAgencies: this[arrayToKeep]});
+      break;
+      case 'myRouts':
+      this[arrayToKeep] = this.myAggregateData[1];
+      // this.myAggregateData.push({myRoutes: this[arrayToKeep]});
+      break;
+      case 'myDirections':
+      this[arrayToKeep] = this.myAggregateData[2];
+      // this.myAggregateData.push({myDirections: this[arrayToKeep]});
+      break;
+      case 'myStops':
+      this[arrayToKeep] = this.myAggregateData[3];
+      // this.myAggregateData.push({myStops: this[arrayToKeep]});
+      break;
+    }
+
+    // this['arrayToKeep'] = this.myAggregateData.shift();
+
+inspect("checking out the sub array below");
+inspect(this[arrayToKeep]);
+
     var tempObj = removeSelected(this[arrayToKeep]);
     delete tempObj.selected;
 
     var tempObj1 = addSelected(this[arrayToKeep], objOfarraysTokeep[arrayToKeep]);
-    inspect("returning the object to add selected");
-    inspect(tempObj1);
+inspect("adding selected to the object below");
+inspect(tempObj1);
     tempObj1['selected']='yes';
     tempArray.push(this['arrayToKeep']);
   }
 
   this.myAggregateData = [];
   this.myAggregateData = tempArray;
-  inspect(this.myAggregateData);
   inspect("arrayEdit finished");
 }
 
@@ -360,6 +390,10 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
   });
 }
 
+function setInitialTag () {
+
+}
+
 /**
  * @public
  * @description: Requests list of agencies from nextBus
@@ -375,19 +409,37 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
       that.myAgenciesRaw = result;      
       var initialTag = 0;
       that.myAgenciesRaw.body.agency.forEach(function(item) {
-        if (initialTag == 0) {
-          that.myAgencies.push({
-            myAgenciesNames : item.$.title, 
-            myTags : item.$.tag, selected : 'yes'
-          });
-          req.mySession.agencyCookie=item.$.tag;
+        if (req.mySession.agencyCookie) {
+          if (req.mySession.agencyCookie==item.$.tag) {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myTags : item.$.tag, selected : 'yes'
+            });
+            req.mySession.agencyCookie=item.$.tag;
+          } else {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myTags : item.$.tag
+            });
+          }
         } else {
-          that.myAgencies.push({
-            myAgenciesNames : item.$.title, 
-            myTags : item.$.tag
-          });
+          if (initialTag==0) {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myTags : item.$.tag, selected : 'yes'
+            });
+            req.mySession.agencyCookie=item.$.tag;
+          } else {
+            that.myAgencies.push({
+              myAgenciesNames : item.$.title, 
+              myTags : item.$.tag
+            });
+          }
+          initialTag++;
         }
-        initialTag++;
+        
+        
+
       });
       that.myAggregateData.push({myAgencies:that.myAgencies});
       // inspect(that.myAgencies);
@@ -410,19 +462,32 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
     parser.parseString(data, function(err, result) {
       that.myRoutsRaw = result;
       var initialTag = 0;
-
       that.myRoutsRaw.body.route.forEach(function(item) {
-        if (initialTag==0) {
-          that.myRouts.push({
-            myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
-          });
-          req.mySession.routeCookie=item.$.tag;
+        if (req.mySession.routeCookie) {
+          if (req.mySession.routeCookie == item.$.tag) {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
+            });
+            req.mySession.routeCookie=item.$.tag;
+          } else {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myTags : item.$.tag
+            });
+          }
         } else {
-          that.myRouts.push({
-            myRoutsNames : item.$.title, myTags : item.$.tag
-          });
+          if (initialTag==0) {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
+            });
+            req.mySession.routeCookie=item.$.tag;
+          } else {
+            that.myRouts.push({
+              myRoutsNames : item.$.title, myTags : item.$.tag
+            });
+          }
+          initialTag++;  
         }
-        initialTag++;
+        
       });
       that.myAggregateData.push({myRouts:that.myRouts});   
       // inspect(that.myRouts);
@@ -446,23 +511,39 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
       parser.parseString(data, function(err, result) {
         that.myDirectionsRaw = result;
         var initialTag=0;
-        var selectedDirection='';
 
         that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-          if (item.$.tag == direction) {
-            that.myDirections.push({                  
-              myDirectionsNames : item.$.title, 
-              myTags : item.$.tag, 
-              selected : 'yes'
-            });
-            req.mySession.directionCookie=item.$.tag;
+          if (req.mySession.directionCookie) {
+            if (item.$.tag == req.mySession.directionCookie) {
+              that.myDirections.push({                  
+                myDirectionsNames : item.$.title, 
+                myTags : item.$.tag, 
+                selected : 'yes'
+              });
+              req.mySession.directionCookie=item.$.tag;
+            } else {
+              that.myDirections.push({                  
+                myDirectionsNames : item.$.title, 
+                myTags : item.$.tag                  
+              });
+            }
           } else {
-            that.myDirections.push({                  
-              myDirectionsNames : item.$.title, 
-              myTags : item.$.tag                  
-            });
+            if (item.$.tag == direction) {
+              that.myDirections.push({                  
+                myDirectionsNames : item.$.title, 
+                myTags : item.$.tag, 
+                selected : 'yes'
+              });
+              req.mySession.directionCookie=item.$.tag;
+            } else {
+              that.myDirections.push({                  
+                myDirectionsNames : item.$.title, 
+                myTags : item.$.tag                  
+              });
+            }
+            initialTag++;  
           }
-          initialTag++;
+          
         });
         that.myAggregateData.push({myDirections:that.myDirections});
         // inspect(that.myDirections);
@@ -490,29 +571,56 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
         var selectedDirection='';
 
         that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
-          if (itemDirection.$.tag == direction) { // finding the correct direction
-            initialTag = 0;
-            itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction       
-              that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
-                if (itemStop.$.tag == item.$.tag) {
-                  if (initialTag == 0) {
-                    that.myStops.push({
-                      myStopsNames : itemStop.$.title, 
-                      myTags : item.$.tag, 
-                      selected : 'yes'
-                    });
-                    req.mySession.stopCookie=item.$.tag;
-                  } else {
-                    that.myStops.push({
-                      myStopsNames : itemStop.$.title, 
-                      myTags : item.$.tag
-                    });
-                  }
-                  initialTag++;
-                }
+            if (itemDirection.$.tag == direction) { // finding the correct direction
+              itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction       
+                that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
+                  
+
+                  
+                    if (itemStop.$.tag == item.$.tag) {
+                      if (req.mySession.stopCookie) {
+                        if (req.mySession.stopCookie==item.$.tag) {
+                          that.myStops.push({
+                            myStopsNames : itemStop.$.title, 
+                            myTags : item.$.tag, 
+                            selected : 'yes'
+                          });
+                          req.mySession.stopCookie=item.$.tag;
+                        } else {
+                          that.myStops.push({
+                            myStopsNames : itemStop.$.title, 
+                            myTags : item.$.tag
+                          });
+                        }
+                      } else {
+                        if (initialTag == 0) {
+                          that.myStops.push({
+                            myStopsNames : itemStop.$.title, 
+                            myTags : item.$.tag, 
+                            selected : 'yes'
+                          });
+                          req.mySession.stopCookie=item.$.tag;
+                        } else {
+                          that.myStops.push({
+                            myStopsNames : itemStop.$.title, 
+                            myTags : item.$.tag
+                          });
+                        }
+                        initialTag++;  
+                      }
+                      
+
+
+
+                    }  
+                  
+                  
+
+
+                });
               });
-            });
-          }
+            }  
+
         });
 
         that.myAggregateData.push({myStops:that.myStops});
@@ -541,45 +649,84 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
       var selectedDirection='';
 
       that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-        if (initialTag==0) {
-          that.myDirections.push({                  
-            myDirectionsNames : item.$.title, 
-            myTags : item.$.tag, 
-            selected : 'yes'
-          });
-          req.mySession.directionCookie=item.$.tag;
-          selectedDirection=item.$.tag;
+        if (req.mySession.directionCookie) {
+          inspect("req.mySession.directionCookie is present: "+req.mySession.directionCookie)
+          if (req.mySession.directionCookie == item.$.tag) {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myTags : item.$.tag, 
+              selected : 'yes'
+            });
+            req.mySession.directionCookie=item.$.tag;
+            selectedDirection=item.$.tag;
+          } else {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myTags : item.$.tag                  
+            });
+          }
         } else {
-          that.myDirections.push({                  
-            myDirectionsNames : item.$.title, 
-            myTags : item.$.tag                  
-          });
+          if (initialTag==0) {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myTags : item.$.tag, 
+              selected : 'yes'
+            });
+            req.mySession.directionCookie=item.$.tag;
+            selectedDirection=item.$.tag;
+          } else {
+            that.myDirections.push({                  
+              myDirectionsNames : item.$.title, 
+              myTags : item.$.tag                  
+            });
+          }
+          initialTag++;  
         }
-        initialTag++;
+        inspect("selectedDirection: "+selectedDirection);
       });
       that.myAggregateData.push({myDirections:that.myDirections});
 
-      that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction
+      that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction        
         if (itemDirection.$.tag == selectedDirection) { // finding the correct direction
           initialTag = 0;
           itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction       
             that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
-              if (itemStop.$.tag == item.$.tag) {
-                if (initialTag == 0) {
-                  that.myStops.push({
-                    myStopsNames : itemStop.$.title, 
-                    myTags : item.$.tag, 
-                    selected : 'yes'
-                  });
-                  req.mySession.stopCookie=item.$.tag;
-                } else {
-                  that.myStops.push({
-                    myStopsNames : itemStop.$.title, 
-                    myTags : item.$.tag
-                  });
+              if (req.mySession.stopCookie) {
+                if (req.mySession.stopCookie == item.$.tag) {
+                  if (initialTag == 0) {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myTags : item.$.tag, 
+                      selected : 'yes'
+                    });
+                    req.mySession.stopCookie=item.$.tag;
+                  } else {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myTags : item.$.tag
+                    });
+                  }
                 }
-                initialTag++;
+              } else {
+                if (itemStop.$.tag == item.$.tag) {
+                  if (initialTag == 0) {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myTags : item.$.tag, 
+                      selected : 'yes'
+                    });
+                    req.mySession.stopCookie=item.$.tag;
+                  } else {
+                    that.myStops.push({
+                      myStopsNames : itemStop.$.title, 
+                      myTags : item.$.tag
+                    });
+                  }
+                  initialTag++;
+                }  
               }
+              
+
             });
           });
         }
