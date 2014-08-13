@@ -9,7 +9,6 @@ pt = new PublicTransit();
 
 // route middleware that will happen on every request
 router.use(function(req, res, next) {
-
   // cookies test
   inspect(req.cookies);
 
@@ -20,8 +19,7 @@ router.use(function(req, res, next) {
     inspect("This is in the cookie->"+req.mySession.directionCookie);
     inspect("This is in the cookie->"+req.mySession.stopCookie);
   } else {
-    // setting a property will automatically cause a Set-Cookie response
-    // to be sent
+    // setting a property will automatically cause a Set-Cookie response to be sent
     console.log('First time visiting');
   }
 
@@ -50,23 +48,12 @@ router.post('/agencySearch-mobile', function(req, res) {
     tempDirection=req.mySession.directionCookie;
     tempStop=req.mySession.stopCookie;
 
-    console.log("here?");
-
     pt = null;
     pt = new PublicTransit();
-    pt.myAgencies=[];
     pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
-      // pt.arrayEdit({"myAgencies" : tempAgency});    
-      pt.myRouts=[];
       pt.routeRequestMobile(pt.routeListUrl+tempAgency, req, function(data) {
-        // pt.arrayEdit({"myRouts" : tempRoute});
-        pt.myDirections=[];
         pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
-          // pt.arrayEdit({"myDirections" : tempDirection});
-          pt.myStops=[];
           pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
-            // pt.arrayEdit({"myStops" : tempStop});
-            pt.myPredictions=[];
             pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
               inspect(pt.myAggregateData);
               res.send(pt.myAggregateData);
@@ -91,11 +78,8 @@ router.post('/agencySearch-mobile', function(req, res) {
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-agency', function(req, res) {  
-  
-  // req.session = null; 
     var agency = req.body.agency;
     console.log("agency change: "+agency);    
-    // pt.arrayEdit({"myAgencies" : agency});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=null;
     req.mySession.directionCookie=null;
@@ -103,12 +87,8 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
 
     pt = null;
     pt = new PublicTransit();
-    pt.myRouts=[];
     pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
-      pt.myDirections=[];
-      pt.myStops=[];
       pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {  
-          pt.myPredictions=[];
           pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
             inspect("This is what myAggregateData looks like after agency change by user->");
             inspect(pt.myAggregateData);
@@ -116,7 +96,6 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
           });
       }); // END requesting direction and stops
     }); // END requesting route
-
 });
 
 /* POST home page and redirect to dynamic url for mobile */
@@ -124,20 +103,20 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
     var agency = req.body.agency;
     var route = req.body.route;
     console.log("route change: "+route);
-    // pt.arrayEdit({"myAgencies" : agency,
-                  // "myRouts" : route});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
+    req.mySession.directionCookie=null;
+    req.mySession.stopCookie=null;
 
-      pt.myDirections=[];
-      pt.myStops=[];
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
-        pt.myPredictions=[];
-        pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-          res.send(pt.myAggregateData);
-        });
-      }); // END requesting direction
-
+    pt = null;
+    pt = new PublicTransit();
+    pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
+      pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
+        inspect("This is what myAggregateData looks like after route change by user->");
+        inspect(pt.myAggregateData);
+        res.send(pt.myAggregateData);
+      });
+    }); // END requesting direction
 });
 
 /* POST home page and redirect to dynamic url for mobile */
@@ -146,17 +125,17 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
     var route = req.body.route;
     var direction = req.body.direction;
     console.log("route direction: "+direction);
-    // pt.arrayEdit({"myAgencies" : agency,
-    //               "myRouts" : route,
-    //               "myDirections" : direction});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
+    req.mySession.stopCookie=null;
 
-    pt.myStops=[];
+    pt = null;
+    pt = new PublicTransit();
     pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, direction, req, function(data) {
-      pt.myPredictions=[];
       pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
+        inspect("This is what myAggregateData looks like after direction change by user->");
+        inspect(pt.myAggregateData);
         res.send(pt.myAggregateData);
       });
     }); // END requesting direction
@@ -169,17 +148,16 @@ router.post('/agencySearchMobile-change-stop', function(req, res) {
     var direction = req.body.direction;
     var stop = req.body.stop;
     console.log("change stop: "+stop);
-    // pt.arrayEdit({"myAgencies" : agency,
-    //               "myRouts" : route,
-    //               "myDirections" : direction,
-    //               "myStops" : stop});
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
     req.mySession.stopCookie=stop;
 
-    pt.myPredictions=[];
+    pt = null;
+    pt = new PublicTransit();
     pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+stop+"&useShortTitles=true", function(data) {
+      inspect("This is what myAggregateData looks like after stop change by user->");
+      inspect(pt.myAggregateData);
       res.send(pt.myAggregateData);
     });
 });
@@ -277,106 +255,6 @@ function PublicTransit() {
   this.myPredictionsMin = [],
   this.myPredictionsSec = [];
   console.log("Constructors set");
-}
-
-/**
- * @public
- * @description: Takes a collection of tags the user didn't edit, then loop through
- * each tag and save the arrays into tempArray, and set that as the new myAggregateData array. 
- * @param objOfarraysTokeep: An object of tags that have been selected by the user
-**/
-PublicTransit.prototype.arrayEdit = function (objOfarraysTokeep) {
-  var tempArray = [];
-  var tempStr = '';
-
-  for(var arrayToKeep in objOfarraysTokeep) {
-    tempStr=arrayToKeep+"";
-
-    switch (tempStr) {
-      case 'myAgencies':
-      this[arrayToKeep] = this.myAggregateData[0];
-      // this.myAggregateData.push({myAgencies: this[arrayToKeep]});
-      break;
-      case 'myRouts':
-      this[arrayToKeep] = this.myAggregateData[1];
-      // this.myAggregateData.push({myRoutes: this[arrayToKeep]});
-      break;
-      case 'myDirections':
-      this[arrayToKeep] = this.myAggregateData[2];
-      // this.myAggregateData.push({myDirections: this[arrayToKeep]});
-      break;
-      case 'myStops':
-      this[arrayToKeep] = this.myAggregateData[3];
-      // this.myAggregateData.push({myStops: this[arrayToKeep]});
-      break;
-    }
-
-    // this['arrayToKeep'] = this.myAggregateData.shift();
-
-inspect("checking out the sub array below");
-inspect(this[arrayToKeep]);
-
-    var tempObj = removeSelected(this[arrayToKeep]);
-    delete tempObj.selected;
-
-    var tempObj1 = addSelected(this[arrayToKeep], objOfarraysTokeep[arrayToKeep]);
-inspect("adding selected to the object below");
-inspect(tempObj1);
-    tempObj1['selected']='yes';
-    tempArray.push(this['arrayToKeep']);
-  }
-
-  this.myAggregateData = [];
-  this.myAggregateData = tempArray;
-  inspect("arrayEdit finished");
-}
-
-/**
- * @public
- * @description: Takes a collection of tags the user didn't edit, then loop through
- * each tag and save the arrays into tempArray, and set that as the new myAggregateData array. 
- * @param objOfarraysTokeep: An object of tags that have been selected by the user
-**/
-PublicTransit.prototype.arrayEditAll = function (objOfarraysTokeep) {
-  var tempArray = [];
-  var tempStr = '';
-  
-
-  for(var arrayToKeep in objOfarraysTokeep) {
-    tempStr=arrayToKeep+"";
-    inspect("inside arrayEdit: "+tempStr);
-    
-    this[arrayToKeep] = this.getJSONSectionFromArray(tempStr);
-
-    var tempObj = removeSelected(this[arrayToKeep]);
-    delete tempObj.selected;
-
-    var tempObj1 = addSelected(this[arrayToKeep], objOfarraysTokeep[arrayToKeep]);
-    inspect("returning the object to add selected");    
-    tempObj1['selected']='yes';
-    inspect(tempObj1);
-
-    
-    switch (tempStr) {
-      case 'myAgencies':
-      this.myAgencies=[];
-      this.myAggregateData.push({myAgencies: this[arrayToKeep]});
-      break;
-      case 'myRouts':
-      this.myAggregateData.push({myRoutes: this[arrayToKeep]});
-      break;
-      case 'myDirections':
-      this.myAggregateData.push({myDirections: this[arrayToKeep]});
-      break;
-      case 'myStops':
-      this.myAggregateData.push({myStops: this[arrayToKeep]});
-      break;
-    }
-  }
-
-  inspect("arrayEdit almost finished");
-  inspect(this.myAggregateData);
-  inspect("arrayEdit finished");
 }
 
 /**
