@@ -1,5 +1,4 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -30,10 +29,10 @@ a {
   text-align: center;
 }
   #predictions p:nth-child(2) {
-    font-size: 50px;
+    font-size: 2em;
   }
   #predictions p:nth-child(n+3) {
-    font-size: 22px;
+    font-size: 1.5em;
   }
 
 #loading {
