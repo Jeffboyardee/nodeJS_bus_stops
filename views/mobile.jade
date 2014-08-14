@@ -12,30 +12,30 @@ block content
 					div.name agency
 				div.col-xs-10
 					select#agencyList.form-control.btn.btn-default
-						include optionsTemplate.html
+						include ./template/optionsTemplate.html
 			#route.row
 				div.col-xs-2
 					div.name route
 				div.col-xs-10
 					select#routeList.form-control.btn.btn-default
-						include routeTemplate.html
+						include ./template/routeTemplate.html
 			#direction.row
 				div.col-xs-2
 					div.name direction
 				div.col-xs-10
 					select#directionList.form-control.btn.btn-default
-						include directionTemplate.html
+						include ./template/directionTemplate.html
 			#stop.row
 				div.col-xs-2
 					div.name stop
 				div.col-xs-10
 					select#stopList.form-control.btn.btn-default
-						include stopsTemplate.html
+						include ./template/stopsTemplate.html
 		
 		ul#results
-		include template.html
+		include ./template/template.html
 		#predictions.alert.alert-info
-		include predictionsTemplate.html
+		include ./template/predictionsTemplate.html
 		button#reload.btn.btn-default.btn-lg.btn-block(type="button") Reload
 		.row
 			#loading
