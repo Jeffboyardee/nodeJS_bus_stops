@@ -61,4 +61,54 @@ app.use(function(err, req, res, next) {
 });
 
 
+const DEFAULT_TIMEOUT = 10000;
+
+/**
+Throws an error after the specified request timeout elapses.
+
+Options include:
+    - timeout
+    - errorPrototype (the type of Error to throw)
+**/
+module.exports = function(options) {
+    //Set options
+    options = options || {};
+    if(options.timeout == null)
+        options.timeout = DEFAULT_TIMEOUT;
+    return function(req, res, next) {
+        //timeout is the timeout timeout for this request
+        var tid, timeout = options.timeout;
+        //Add setTimeout and clearTimeout functions
+        req.setTimeout = function(newTimeout) {
+            if(newTimeout != null)
+                timeout = newTimeout; //Reset the timeout for this request
+            req.clearTimeout();
+            tid = setTimeout(function() {
+                if(options.throwError && !res.finished)
+                {
+                    //throw the error
+                    var proto = options.error == null ? Error : options.error;
+                    next(new proto("Timeout " + req.method + " " + req.url) );
+                }
+            }, timeout);
+        };
+        req.clearTimeout = function() {
+            clearTimeout(tid);
+        };
+        req.getTimeout = function() {
+            return timeout;
+        };
+        //proxy end to clear the timeout
+        var oldEnd = res.end;
+        res.end = function() {
+            req.clearTimeout();
+            res.end = oldEnd;
+            return res.end.apply(res, arguments);
+        }
+        //start the timer
+        req.setTimeout();
+        next();
+    };
+}
+
 module.exports = app;
