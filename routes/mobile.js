@@ -41,8 +41,6 @@ router.post('/agencySearch-mobile', function(req, res) {
       tempStop=''; 
 
   if (req.mySession.seenyou) {
-    console.log("if is true, cookie data: "+req.mySession.agencyCookie);
-    
     tempAgency=req.mySession.agencyCookie;
     tempRoute=req.mySession.routeCookie;
     tempDirection=req.mySession.directionCookie;
@@ -55,7 +53,7 @@ router.post('/agencySearch-mobile', function(req, res) {
         pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
           pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
             pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
-              inspect(pt.myAggregateData);
+              // inspect(pt.myAggregateData);
               res.send(pt.myAggregateData);
             });
           }); // END requesting stops
@@ -79,7 +77,7 @@ router.post('/agencySearch-mobile', function(req, res) {
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-agency', function(req, res) {  
     var agency = req.body.agency;
-    console.log("agency change: "+agency);    
+    // console.log("agency change: "+agency);    
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=null;
     req.mySession.directionCookie=null;
@@ -90,8 +88,8 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
     pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
       pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {  
           pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-            inspect("This is what myAggregateData looks like after agency change by user->");
-            inspect(pt.myAggregateData);
+            // inspect("This is what myAggregateData looks like after agency change by user->");
+            // inspect(pt.myAggregateData);
             res.send(pt.myAggregateData);
           });
       }); // END requesting direction and stops
@@ -102,7 +100,7 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
 router.post('/agencySearchMobile-change-route', function(req, res) {  
     var agency = req.body.agency;
     var route = req.body.route;
-    console.log("route change: "+route);
+    // console.log("route change: "+route);
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=null;
@@ -112,8 +110,8 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
     pt = new PublicTransit();
     pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
       pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-        inspect("This is what myAggregateData looks like after route change by user->");
-        inspect(pt.myAggregateData);
+        // inspect("This is what myAggregateData looks like after route change by user->");
+        // inspect(pt.myAggregateData);
         res.send(pt.myAggregateData);
       });
     }); // END requesting direction
@@ -124,7 +122,7 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
     var agency = req.body.agency;
     var route = req.body.route;
     var direction = req.body.direction;
-    console.log("route direction: "+direction);
+    // console.log("route direction: "+direction);
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
@@ -134,8 +132,8 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
     pt = new PublicTransit();
     pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, direction, req, function(data) {
       pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-        inspect("This is what myAggregateData looks like after direction change by user->");
-        inspect(pt.myAggregateData);
+        // inspect("This is what myAggregateData looks like after direction change by user->");
+        // inspect(pt.myAggregateData);
         res.send(pt.myAggregateData);
       });
     }); // END requesting direction
@@ -147,7 +145,7 @@ router.post('/agencySearchMobile-change-stop', function(req, res) {
     var route = req.body.route;
     var direction = req.body.direction;
     var stop = req.body.stop;
-    console.log("change stop: "+stop);
+    // console.log("change stop: "+stop);
     req.mySession.agencyCookie=agency;
     req.mySession.routeCookie=route;
     req.mySession.directionCookie=direction;
@@ -156,8 +154,8 @@ router.post('/agencySearchMobile-change-stop', function(req, res) {
     pt = null;
     pt = new PublicTransit();
     pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+stop+"&useShortTitles=true", function(data) {
-      inspect("This is what myAggregateData looks like after stop change by user->");
-      inspect(pt.myAggregateData);
+      // inspect("This is what myAggregateData looks like after stop change by user->");
+      // inspect(pt.myAggregateData);
       res.send(pt.myAggregateData);
     });
 });
@@ -188,45 +186,6 @@ function requests(url, callback) {
     // pass back the results to client side
     callback(resultsArray);
   });
-}
-
-/**
- * @public
- * @description: 
- * @param arr: 
-**/
-function removeSelected(arr) {
-  for (var i=0, iLen=arr.length; i<iLen; i++) {
-    if (arr[i].selected) return arr[i];
-  }
-}
-
-/**
- * @public
- * @description: 
- * @param arr: 
- * @param tag: 
-**/
-function addSelected(arr, tag) {
-  for (var i=0, iLen=arr.length; i<iLen; i++) {
-    if (arr[i].myTags == tag) return arr[i];
-  }
-}
-
-PublicTransit.prototype.getJSONSectionFromArray = function (arraySectionTitleStr) {
-  var outputArraySec=[];
-  // var outputArraySecTitle=arraySectionTitleStr;
-  inspect(this.myAggregateData.length);
-  for (var i=0, tempData=this.myAggregateData.length; i<tempData; i++) {
-    for (name in this.myAggregateData[i]) {
-       if (name == arraySectionTitleStr) {
-        inspect("found a match in the array----> "+name)
-        outputArraySec = this.myAggregateData[i][name];
-        // inspect(outputArraySec);
-        return outputArraySec;
-       }
-    }
-  }
 }
 
 /** 
@@ -266,10 +225,6 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
   request(url, function (err, resp, body) {
     callback(body);
   });
-}
-
-function setInitialTag () {
-
 }
 
 /**

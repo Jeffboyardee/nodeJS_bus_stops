@@ -1,0 +1,28 @@
+extends layout
+
+block content
+	.site-wrapper
+		.site-wrapper-inner
+			.cover-container
+				.masthead.clearfix
+					.inner
+						//-h3.masthead-brand Jeff Wei
+						//-ul.nav.masthead-nav
+							li.active
+								a(href="#") Home
+							li
+								a(href="#") Features
+							li
+								a(href="#") Contact
+				.inner.cover
+					//-h1.cover-heading Cover your page.
+					p.lead
+						a(href="/mobile").btn.btn-lg.btn-default Mobile
+						a(href="/desktop").btn.btn-lg.btn-default Desktop
+				.mastfoot
+					.inner
+						p Jeff Wei, 2014
+
+script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
+script(src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
