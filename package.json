@@ -16,6 +16,7 @@
     "morgan": "~1.0.0",
     "node-fs": "*",
     "request": "*",
-    "xml2js": "*"
+    "xml2js": "*",
+    "yelp": "*"
   }
 }
