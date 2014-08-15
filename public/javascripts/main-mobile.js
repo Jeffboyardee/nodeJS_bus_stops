@@ -189,5 +189,5 @@ $(function(){
 			if (autoPredictCount == 3)
 				window.clearInterval(autoPredict);
 		});
-	}, 5000);	// 10 seconds
+	}, 10000);	// 10 seconds
 });
