@@ -11,6 +11,7 @@ $(function(){
 		directionTemplate = Handlebars.compile(directionSource),
 		stopsTemplate = Handlebars.compile(stopsSource),
 		predictionsTemplate = Handlebars.compile(predictionSource);
+	var autoPredictCount=0;
 
 	$results = $('#results');
 	$agencyList = $('#agencyList');
@@ -166,4 +167,27 @@ $(function(){
 			console.log("error from server");
 		});
 	});
+
+	var autoPredict = setInterval(function() {
+		var parameters = { 
+			agency: $('#agencyList option:selected').attr('id'), 
+			route: $('#routeList option:selected').attr('id'),
+			direction: $('#directionList option:selected').attr('id'),
+			stop: $('#stopList option:selected').attr('id')
+		};
+		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
+			console.log("success from server");
+			$predictions.html( predictionsTemplate(data[0]) );
+			$('#agencyList').attr('disabled', false);
+			$('#routeList').attr('disabled', false);
+			$('#directionList').attr('disabled', false);	
+			$('#stopList').attr('disabled', false);	
+		})
+		.fail(function() {
+			autoPredictCount++;
+			console.log("error from server");
+			if (autoPredictCount == 3)
+				window.clearInterval(autoPredict);
+		});
+	}, 5000);	// 10 seconds
 });

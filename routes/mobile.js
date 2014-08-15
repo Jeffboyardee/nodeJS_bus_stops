@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 var xml2js = require('xml2js');
-var parser = new xml2js.Parser();
+var parser = new xml2js.Parser().parseString;
 var inspect = require('eyes').inspector({maxLength: false});
 var pt = '';
 pt = new PublicTransit();
@@ -238,7 +238,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
+    parser(data, function(err, result) {
       that.myAgenciesRaw = result;      
       var initialTag = 0;
       that.myAgenciesRaw.body.agency.forEach(function(item) {
@@ -292,7 +292,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
+    parser(data, function(err, result) {
       that.myRoutsRaw = result;
       var initialTag = 0;
       that.myRoutsRaw.body.route.forEach(function(item) {
@@ -341,7 +341,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
 
     this.dataRequests(url, function(data) {
       // converts xml to json and store in result 
-      parser.parseString(data, function(err, result) {
+      parser(data, function(err, result) {
         that.myDirectionsRaw = result;
         var initialTag=0;
 
@@ -398,7 +398,7 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
 
     this.dataRequests(url, function(data) {
       // converts xml to json and store in result 
-      parser.parseString(data, function(err, result) {
+      parser(data, function(err, result) {
         that.myDirectionsRaw = result;
         var initialTag=0;
         var selectedDirection='';
@@ -476,7 +476,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
+    parser(data, function(err, result) {
       that.myDirectionsRaw = result;
       var initialTag=0;
       var selectedDirection='';
@@ -582,7 +582,7 @@ PublicTransit.prototype.predictionsRequest = function (url, callback) {
 
   this.dataRequests(url, function(data) {
     // converts xml to json and store in result 
-    parser.parseString(data, function(err, result) {
+    parser(data, function(err, result) {
       that.myPredictionsRaw = result;
       var predictionsCheck = that.myPredictionsRaw.body.predictions[0].$.dirTitleBecauseNoPredictions;
       if (predictionsCheck) {
