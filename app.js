@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var routes_main = require('./routes/index');
 var routes_desktop = require('./routes/desktop');
 var routes_mobile = require('./routes/mobile');
+var routes_yelp = require('./routes/yelp');
 var app = express();
 
 // view engine setup
@@ -29,6 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes_main);
 app.use('/desktop', routes_desktop);
 app.use('/mobile', routes_mobile);
+app.use('/yelp', routes_yelp);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -71,45 +73,45 @@ Options include:
     - timeout
     - errorPrototype (the type of Error to throw)
 **/
-module.exports = function(options) {
-    //Set options
-    options = options || {};
-    if(options.timeout == null)
-        options.timeout = DEFAULT_TIMEOUT;
-    return function(req, res, next) {
-        //timeout is the timeout timeout for this request
-        var tid, timeout = options.timeout;
-        //Add setTimeout and clearTimeout functions
-        req.setTimeout = function(newTimeout) {
-            if(newTimeout != null)
-                timeout = newTimeout; //Reset the timeout for this request
-            req.clearTimeout();
-            tid = setTimeout(function() {
-                if(options.throwError && !res.finished)
-                {
-                    //throw the error
-                    var proto = options.error == null ? Error : options.error;
-                    next(new proto("Timeout " + req.method + " " + req.url) );
-                }
-            }, timeout);
-        };
-        req.clearTimeout = function() {
-            clearTimeout(tid);
-        };
-        req.getTimeout = function() {
-            return timeout;
-        };
-        //proxy end to clear the timeout
-        var oldEnd = res.end;
-        res.end = function() {
-            req.clearTimeout();
-            res.end = oldEnd;
-            return res.end.apply(res, arguments);
-        }
-        //start the timer
-        req.setTimeout();
-        next();
-    };
-}
+// module.exports = function(options) {
+//     //Set options
+//     options = options || {};
+//     if(options.timeout == null)
+//         options.timeout = DEFAULT_TIMEOUT;
+//     return function(req, res, next) {
+//         //timeout is the timeout timeout for this request
+//         var tid, timeout = options.timeout;
+//         //Add setTimeout and clearTimeout functions
+//         req.setTimeout = function(newTimeout) {
+//             if(newTimeout != null)
+//                 timeout = newTimeout; //Reset the timeout for this request
+//             req.clearTimeout();
+//             tid = setTimeout(function() {
+//                 if(options.throwError && !res.finished)
+//                 {
+//                     //throw the error
+//                     var proto = options.error == null ? Error : options.error;
+//                     next(new proto("Timeout " + req.method + " " + req.url) );
+//                 }
+//             }, timeout);
+//         };
+//         req.clearTimeout = function() {
+//             clearTimeout(tid);
+//         };
+//         req.getTimeout = function() {
+//             return timeout;
+//         };
+//         //proxy end to clear the timeout
+//         var oldEnd = res.end;
+//         res.end = function() {
+//             req.clearTimeout();
+//             res.end = oldEnd;
+//             return res.end.apply(res, arguments);
+//         }
+//         //start the timer
+//         req.setTimeout();
+//         next();
+//     };
+// }
 
 module.exports = app;

@@ -1,0 +1,17 @@
+extends layout
+
+block content
+	.container
+		.page-header
+			h1 Search along current route: 
+				p= agency +' - '
+					span= route
+		
+		ul#results
+		include ./template/yelp-template.html
+		.row
+			#loading
+
+script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
+script(src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")

@@ -1,19 +1,24 @@
 var express = require('express');
 var router = express.Router();
 var request = require('request');
+var yelp = require("yelp").createClient({
+	consumer_key: "jWuWFjOYdfoh2D2BK4iT4A",
+	consumer_secret: "DdWcUuIakWpOJse-a3XT464XMMI",
+	token: "ZNiL2oC7zF-vaquHoK9ZmvzckJjMR17V",
+	token_secret: "uxdX7FrRpnWjsGfTmirelXfO8IE"
+});
 var xml2js = require('xml2js');
 var parser = new xml2js.Parser().parseString;
 var inspect = require('eyes').inspector({maxLength: false});
-
-var pt = '';
-pt = new PublicTransit();
+var yelpPT = '';
+yelpPT = new PublicTransit();
 
 // route middleware that will happen on every request
 router.use(function(req, res, next) {
   // cookies test
   inspect(req.cookies);
 
-  if (req.mySession.seenyou && req.mySession.agencyCookie) {
+  if (req.mySession.seenyou) {
     console.log('Been here, done that.');
     inspect("This is in the cookie->"+req.mySession.agencyCookie);
     inspect("This is in the cookie->"+req.mySession.routeCookie);
@@ -21,6 +26,7 @@ router.use(function(req, res, next) {
     inspect("This is in the cookie->"+req.mySession.stopCookie);
   } else {
     // setting a property will automatically cause a Set-Cookie response to be sent
+    req.mySession.seenyou=true;
     console.log('First time visiting');
   }
 
@@ -31,42 +37,59 @@ router.use(function(req, res, next) {
 });
 
 router.get('/',  function(req, res){
-  res.render('mobile', { title: '[Mobile]Express-Realtime Bus/Metro lookup'});
+  tempAgency=req.mySession.agencyCookie;
+  tempRoute=req.mySession.routeCookie;
+  tempDirection=req.mySession.directionCookie;
+  tempStop=req.mySession.stopCookie;
+
+	res.render('yelp', { title: '[Mobile]Yelp lookup', agency: tempAgency, route: tempRoute });
 });
 
+// See http://www.yelp.com/developers/documentation/v2/search_api
+yelp.search({term: "chinese+food", ll: "34.1477499, -118.08121", limit: "5"}, function(error, data) {
+  console.log(error);
+  inspect(data);
+});
+
+// See http://www.yelp.com/developers/documentation/v2/business
+// yelp.business("yelp-san-francisco", function(error, data) {
+//   console.log(error);
+//   inspect(data);
+// });
+
 /* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearch-mobile', function(req, res) {      
+router.post('/yelpSearch-mobile', function(req, res) {      
   var tempAgency='', 
       tempRoute='',
       tempDirection='',
       tempStop=''; 
 
-  if (req.mySession.seenyou && req.mySession.agencyCookie) {
+  if (req.mySession.seenyou) {
     tempAgency=req.mySession.agencyCookie;
     tempRoute=req.mySession.routeCookie;
     tempDirection=req.mySession.directionCookie;
     tempStop=req.mySession.stopCookie;
 
-    pt = null;
-    pt = new PublicTransit();
-    pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
-      pt.routeRequestMobile(pt.routeListUrl+tempAgency, req, function(data) {
-        pt.directionsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
-          pt.stopsRequestMobile(pt.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
-            pt.predictionsRequest(pt.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
-              // inspect(pt.myAggregateData);
-              res.send(pt.myAggregateData);
+    yelpPT = null;
+    yelpPT = new PublicTransit();
+    yelpPT.agencyRequestMobile(yelpPT.agencyListUrl, req, function(data) {
+      yelpPT.routeRequestMobile(yelpPT.routeListUrl+tempAgency, req, function(data) {
+        yelpPT.directionsRequestMobile(yelpPT.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
+          yelpPT.stopsRequestMobile(yelpPT.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
+            yelpPT.predictionsRequest(yelpPT.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
+              inspect(yelpPT.myAggregateData);
+              res.send(yelpPT.myAggregateData);
             });
           }); // END requesting stops
         }); // END requesting directions
       }); // END requesting route
     }); // END requesting agency
   } else {
-    pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
-      pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, req, function(data) {
-        pt.directionsStopsRequestMobile(pt.directionListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags, req, function(data) {
-          pt.predictionsRequest(pt.stopListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-            res.send(pt.myAggregateData);
+    yelpPT.agencyRequestMobile(yelpPT.agencyListUrl, req, function(data) {
+      yelpPT.routeRequestMobile(yelpPT.routeListUrl+yelpPT.myAgencies[0].myTags, req, function(data) {
+        yelpPT.directionsStopsRequestMobile(yelpPT.directionListUrl+yelpPT.myAgencies[0].myTags+"&r="+yelpPT.myRouts[0].myTags, req, function(data) {
+          yelpPT.predictionsRequest(yelpPT.stopListUrl+yelpPT.myAgencies[0].myTags+"&r="+yelpPT.myRouts[0].myTags+"&s="+yelpPT.myStops[0].myTags+"&useShortTitles=true", function(data) {
+            res.send(yelpPT.myAggregateData);
           });
         }); // END requesting direction
       }); // END requesting route
@@ -75,137 +98,6 @@ router.post('/agencySearch-mobile', function(req, res) {
   }
 });
 
-/* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearchMobile-change-agency', function(req, res) {  
-    var agency = req.body.agency;
-    // console.log("agency change: "+agency);    
-    req.mySession.agencyCookie=agency;
-    req.mySession.routeCookie=null;
-    req.mySession.directionCookie=null;
-    req.mySession.stopCookie=null;
-
-    pt = null;
-    pt = new PublicTransit();
-    pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {  
-          pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-            // inspect("This is what myAggregateData looks like after agency change by user->");
-            // inspect(pt.myAggregateData);
-            res.send(pt.myAggregateData);
-          });
-      }); // END requesting direction and stops
-    }); // END requesting route
-});
-
-/* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearchMobile-change-route', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
-    // console.log("route change: "+route);
-    req.mySession.agencyCookie=agency;
-    req.mySession.routeCookie=route;
-    req.mySession.directionCookie=null;
-    req.mySession.stopCookie=null;
-
-    pt = null;
-    pt = new PublicTransit();
-    pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
-      pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-        // inspect("This is what myAggregateData looks like after route change by user->");
-        // inspect(pt.myAggregateData);
-        res.send(pt.myAggregateData);
-      });
-    }); // END requesting direction
-});
-
-/* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearchMobile-change-direction', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
-    var direction = req.body.direction;
-    // console.log("route direction: "+direction);
-    req.mySession.agencyCookie=agency;
-    req.mySession.routeCookie=route;
-    req.mySession.directionCookie=direction;
-    req.mySession.stopCookie=null;
-
-    pt = null;
-    pt = new PublicTransit();
-    pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, direction, req, function(data) {
-      pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-        // inspect("This is what myAggregateData looks like after direction change by user->");
-        // inspect(pt.myAggregateData);
-        res.send(pt.myAggregateData);
-      });
-    }); // END requesting direction
-});
-
-/* POST home page and redirect to dynamic url for mobile */
-router.post('/agencySearchMobile-change-stop', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
-    var direction = req.body.direction;
-    var stop = req.body.stop;
-    // console.log("change stop: "+stop);
-    req.mySession.agencyCookie=agency;
-    req.mySession.routeCookie=route;
-    req.mySession.directionCookie=direction;
-    req.mySession.stopCookie=stop;
-
-    pt = null;
-    pt = new PublicTransit();
-    pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+stop+"&useShortTitles=true", function(data) {
-      // inspect("This is what myAggregateData looks like after stop change by user->");
-      // inspect(pt.myAggregateData);
-      res.send(pt.myAggregateData);
-    });
-});
-
-function requests(url, callback) {
-  // request module is used to process the yql url and return the results in JSON format
-  request(url, function(err, resp, body) {
-    var resultsArray = [];
-    body = JSON.parse(body);
-
-    // logic used to compare search results with the input from user
-    if (!body.items) {
-      console.log("nothing found");
-      results = "No results found. Try again.";
-      callback(results);
-    } else {
-      // console.log(body.items[0]);
-      results = body.items;
-
-      for (var i=0;i<results.length;i++) {
-        resultsArray.push({
-          id:results[i]['id'], 
-          stop:results[i]['display_name']
-        });
-      }
-      // console.log(resultsArray);
-    }
-    // pass back the results to client side
-    callback(resultsArray);
-  });
-}
-
-function getCurrentTime() {
-  var currentdate = new Date();
-
-  // For todays date;
-  Date.prototype.today = function () { 
-    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + 
-            (this.getMonth()+1) +"/"+ this.getFullYear();
-  }
-
-  Date.prototype.timeNow = function(){     
-    return ((this.getHours() < 10)?"0":"") + ((this.getHours()>12)?(this.getHours()-12):this.getHours()) +
-            ":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + 
-            this.getSeconds() + ((this.getHours()>12)?('PM'):'AM'); 
-  }
-
-  return currentdate.timeNow();
-}
 
 /** 
  * PublicTransit class Constructor
@@ -237,7 +129,7 @@ function PublicTransit() {
 
 /**
  * @public
- * @description: Calls the request middleware. It gets the xml data from the specified url location
+ * @descriyelpPTion: Calls the request middleware. It gets the xml data from the specified url location
  * @param url: The url of the api location
 **/
 PublicTransit.prototype.dataRequests = function (url, callback) {
@@ -248,9 +140,9 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
 
 /**
  * @public
- * @description: Requests list of agencies from nextBus
+ * @descriyelpPTion: Requests list of agencies from nextBus
  * @param url: The url of the api that provides a list of agencies available
- * @param agencyID: The agency id (optional) taken from the url
+ * @param agencyID: The agency id (oyelpPTional) taken from the url
 **/
 PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
   var that = this;
@@ -302,9 +194,9 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
 
 /**
  * @public
- * @description: Requests list of routes from nextBus
+ * @descriyelpPTion: Requests list of routes from nextBus
  * @param url: The url of the api that provides a list of routes available
- * @param routeID: The route id (optional) taken from the url
+ * @param routeID: The route id (oyelpPTional) taken from the url
 **/
 PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
   var that = this;
@@ -350,10 +242,10 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
 
 /**
  * @public
- * @description: Requests list of Directions and Stops from nextBus
+ * @descriyelpPTion: Requests list of Directions and Stops from nextBus
  * @param url: The url of the api that provides a list of directions and stops available
- * @param directionID: The directions id (optional) taken from the url
- * @param stopID: The stop id (optional) taken from the url
+ * @param directionID: The directions id (oyelpPTional) taken from the url
+ * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
 PublicTransit.prototype.directionsRequestMobile = function (url, direction, req, callback) {
   var that = this;
@@ -398,7 +290,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
           
         });
         that.myAggregateData.push({myDirections:that.myDirections});
-        // inspect(that.myDirections);
+        inspect(that.myDirections);
         callback();
       });
     });  
@@ -406,11 +298,11 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
 
 /**
  * @public
- * @description: Requests list of Directions and Stops from nextBus, and stores list of
+ * @descriyelpPTion: Requests list of Directions and Stops from nextBus, and stores list of
  * stops in an array called myStops.
  * @param url: The url of the api that provides a list of directions and stops available
- * @param directionID: The directions id (optional) taken from the url
- * @param stopID: The stop id (optional) taken from the url
+ * @param directionID: The directions id (oyelpPTional) taken from the url
+ * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
 PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, callback) {
   var that = this;
@@ -484,11 +376,11 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
 
 /**
  * @public
- * @description: Requests list of Directions and Stops from nextBus, and stores list of
+ * @descriyelpPTion: Requests list of Directions and Stops from nextBus, and stores list of
  * directions in an array called myDirections
  * @param url: The url of the api that provides a list of directions and stops available
- * @param directionID: The directions id (optional) taken from the url
- * @param stopID: The stop id (optional) taken from the url
+ * @param directionID: The directions id (oyelpPTional) taken from the url
+ * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
 PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callback) {
   var that = this;
@@ -593,7 +485,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
 
 /**
  * @public
- * @description: Requests list of predictions from nextBus
+ * @descriyelpPTion: Requests list of predictions from nextBus
  * @param url: The url of the api that provides a list of predictions available
 **/
 PublicTransit.prototype.predictionsRequest = function (url, callback) {
@@ -614,14 +506,13 @@ PublicTransit.prototype.predictionsRequest = function (url, callback) {
             myPredictionsSec : item.$.seconds
           });
         });                    
-        that.myAggregateData.push({myPredictions:that.myPredictions, timeUpdated: getCurrentTime()});                    
+        that.myAggregateData.push({myPredictions:that.myPredictions});                    
       }
-      // inspect(that.myAggregateData);
+      // inspect(that.myPredictions);
       callback();
     });
   });
 }
-
 
 
 module.exports = router;
