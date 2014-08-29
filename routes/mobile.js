@@ -682,9 +682,9 @@ PublicTransit.prototype.predictionsRequest = function (url, callback) {
             myPredictionsSec : item.$.seconds
           });
         });                    
-        that.myAggregateData.push({myPredictions:that.myPredictions, timeUpdated: getCurrentTime()});                    
+        that.myAggregateData.push({myPredictions:that.myPredictions});                    
       }
-      // inspect(that.myAggregateData);
+      inspect(that.myAggregateData);
       callback();
     });
   });

@@ -28,6 +28,7 @@ $(function(){
 		$routeList.html( routeTemplate(data[1]) );
 		$directionList.html( directionTemplate(data[2]) );	
 		$stopList.html( stopsTemplate(data[3]) );	
+		data[4]['timeUpdated'] = getCurrentTime();		
 		$predictions.html( predictionsTemplate(data[4]) );
 		// loading gif ends here //
 		$('#loading').hide();
@@ -46,9 +47,11 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-agency', parameters, function(data) {
 			console.log("success from server");
+
 			$routeList.html( routeTemplate(data[0]) );
 			$directionList.html( directionTemplate(data[1]) );	
 			$stopList.html( stopsTemplate(data[2]) );	
+			data[3]['timeUpdated'] = getCurrentTime();
 			$predictions.html( predictionsTemplate(data[3]) );
 			$('#routeList').attr('disabled', false);
 			$('#directionList').attr('disabled', false);
@@ -76,8 +79,10 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-route', parameters, function(data) {
 			console.log("success from server");
+
 			$directionList.html( directionTemplate(data[0]) );	
 			$stopList.html( stopsTemplate(data[1]) );	
+			data[2]['timeUpdated'] = getCurrentTime();
 			$predictions.html( predictionsTemplate(data[2]) );
 			$('#agencyList').attr('disabled', false);
 			$('#directionList').attr('disabled', false);
@@ -107,7 +112,9 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-direction', parameters, function(data) {
 			console.log("success from server");
+
 			$stopList.html( stopsTemplate(data[0]) );	
+			data[1]['timeUpdated'] = getCurrentTime();
 			$predictions.html( predictionsTemplate(data[1]) );
 			$('#agencyList').attr('disabled', false);
 			$('#routeList').attr('disabled', false);
@@ -139,6 +146,8 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
 			console.log("success from server");
+
+			data[0]['timeUpdated'] = getCurrentTime();
 			$predictions.html( predictionsTemplate(data[0]) );
 			$('#agencyList').attr('disabled', false);
 			$('#routeList').attr('disabled', false);
@@ -153,10 +162,14 @@ $(function(){
 
 	$('#reload').click(function (){
 		var parameters = { 
-			agency: $('#agencyList option:selected').attr('id'), 
+			agency: $('#agencyList option:selected').attr('id'),
+			agencyName: $('#agencyList option:selected').html(), 
 			route: $('#routeList option:selected').attr('id'),
+			routeName: $('#routeList option:selected').html(),
 			direction: $('#directionList option:selected').attr('id'),
-			stop: $('#stopList option:selected').attr('id')
+			directionName: $('#directionList option:selected').html(),
+			stop: $('#stopList option:selected').attr('id'),
+			stopName: $('#stopList option:selected').html()
 		};
 		$('#agencyList').attr('disabled', true);
 		$('#routeList').attr('disabled', true);
@@ -167,6 +180,8 @@ $(function(){
 
 		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
 			console.log("success from server");
+
+			data[0]['timeUpdated'] = getCurrentTime();
 			$predictions.html( predictionsTemplate(data[0]) );
 			$('#agencyList').attr('disabled', false);
 			$('#routeList').attr('disabled', false);
@@ -203,3 +218,21 @@ $(function(){
 	// 	});
 	// }, 10000);	// 10 seconds
 });
+
+function getCurrentTime() {
+  var currentdate = new Date();
+
+  // For todays date;
+  Date.prototype.today = function () { 
+    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + 
+            (this.getMonth()+1) +"/"+ this.getFullYear();
+  }
+
+  Date.prototype.timeNow = function(){     
+    return ((this.getHours() < 10)?"0":"") + ((this.getHours()>12)?(this.getHours()-12):this.getHours()) +
+            ":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + 
+            this.getSeconds() + ((this.getHours()>12)?('PM'):'AM'); 
+  }
+
+  return currentdate.timeNow();
+}
