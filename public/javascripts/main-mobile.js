@@ -34,7 +34,10 @@ $(function(){
 	});
 
 	$( "#agencyList" ).change(function() {
-		var parameters = { agency: $('#agencyList option:selected').attr('id') };
+		var parameters = { 
+			agency: $('#agencyList option:selected').attr('id'),
+			agencyName: $('#agencyList option:selected').html() 
+		};
 		$('#routeList').attr('disabled', true);
 		$('#directionList').attr('disabled', true);
 		$('#stopList').attr('disabled', true);
@@ -60,8 +63,10 @@ $(function(){
 
 	$( "#routeList" ).change(function() {
 		var parameters = { 
-			agency: $('#agencyList option:selected').attr('id'), 
-			route: $('#routeList option:selected').attr('id') 
+			agency: $('#agencyList option:selected').attr('id'),
+			agencyName: $('#agencyList option:selected').html(), 
+			route: $('#routeList option:selected').attr('id'),
+			routeName: $('#routeList option:selected').html()
 		};
 		$('#agencyList').attr('disabled', true);
 		$('#directionList').attr('disabled', true);
@@ -87,9 +92,12 @@ $(function(){
 
 	$( "#directionList" ).change(function() {
 		var parameters = { 
-			agency: $('#agencyList option:selected').attr('id'), 
+			agency: $('#agencyList option:selected').attr('id'),
+			agencyName: $('#agencyList option:selected').html(), 
 			route: $('#routeList option:selected').attr('id'),
-			direction: $('#directionList option:selected').attr('id') 
+			routeName: $('#routeList option:selected').html(),
+			direction: $('#directionList option:selected').attr('id'),
+			directionName: $('#directionList option:selected').html() 
 		};
 		$('#agencyList').attr('disabled', true);
 		$('#routeList').attr('disabled', true);
@@ -114,10 +122,14 @@ $(function(){
 
 	$( "#stopList" ).change(function() {
 		var parameters = { 
-			agency: $('#agencyList option:selected').attr('id'), 
+			agency: $('#agencyList option:selected').attr('id'),
+			agencyName: $('#agencyList option:selected').html(), 
 			route: $('#routeList option:selected').attr('id'),
+			routeName: $('#routeList option:selected').html(),
 			direction: $('#directionList option:selected').attr('id'),
-			stop: $('#stopList option:selected').attr('id')
+			directionName: $('#directionList option:selected').html(),
+			stop: $('#stopList option:selected').attr('id'),
+			stopName: $('#stopList option:selected').html()
 		};
 		$('#agencyList').attr('disabled', true);
 		$('#routeList').attr('disabled', true);
@@ -168,26 +180,26 @@ $(function(){
 		});
 	});
 
-	var autoPredict = setInterval(function() {
-		var parameters = { 
-			agency: $('#agencyList option:selected').attr('id'), 
-			route: $('#routeList option:selected').attr('id'),
-			direction: $('#directionList option:selected').attr('id'),
-			stop: $('#stopList option:selected').attr('id')
-		};
-		$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
-			console.log("success from server");
-			$predictions.html( predictionsTemplate(data[0]) );
-			$('#agencyList').attr('disabled', false);
-			$('#routeList').attr('disabled', false);
-			$('#directionList').attr('disabled', false);	
-			$('#stopList').attr('disabled', false);	
-		})
-		.fail(function() {
-			autoPredictCount++;
-			console.log("error from server");
-			if (autoPredictCount == 3)
-				window.clearInterval(autoPredict);
-		});
-	}, 10000);	// 10 seconds
+	// var autoPredict = setInterval(function() {
+	// 	var parameters = { 
+	// 		agency: $('#agencyList option:selected').attr('id'), 
+	// 		route: $('#routeList option:selected').attr('id'),
+	// 		direction: $('#directionList option:selected').attr('id'),
+	// 		stop: $('#stopList option:selected').attr('id')
+	// 	};
+	// 	$.post('/mobile/agencySearchMobile-change-stop', parameters, function(data) {
+	// 		console.log("success from server");
+	// 		$predictions.html( predictionsTemplate(data[0]) );
+	// 		$('#agencyList').attr('disabled', false);
+	// 		$('#routeList').attr('disabled', false);
+	// 		$('#directionList').attr('disabled', false);	
+	// 		$('#stopList').attr('disabled', false);	
+	// 	})
+	// 	.fail(function() {
+	// 		autoPredictCount++;
+	// 		console.log("error from server");
+	// 		if (autoPredictCount == 3)
+	// 			window.clearInterval(autoPredict);
+	// 	});
+	// }, 10000);	// 10 seconds
 });

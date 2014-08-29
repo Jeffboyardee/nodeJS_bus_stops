@@ -15,10 +15,14 @@ router.use(function(req, res, next) {
 
   if (req.mySession.seenyou && req.mySession.agencyCookie) {
     console.log('Been here, done that.');
-    inspect("This is in the cookie->"+req.mySession.agencyCookie);
-    inspect("This is in the cookie->"+req.mySession.routeCookie);
-    inspect("This is in the cookie->"+req.mySession.directionCookie);
-    inspect("This is in the cookie->"+req.mySession.stopCookie);
+    inspect("This is the agencyCookie->"+req.mySession.agencyCookie);
+    inspect("This is the agencyCookieName->"+req.mySession.agencyCookieName);
+    inspect("This is the routeCookie->"+req.mySession.routeCookie);
+    inspect("This is the routeCookieName->"+req.mySession.routeCookieName);
+    inspect("This is the directionCookie->"+req.mySession.directionCookie);
+    inspect("This is the directionCookieName->"+req.mySession.directionCookieName);
+    inspect("This is the stopCookie->"+req.mySession.stopCookie);
+    inspect("This is the stopCookieName->"+req.mySession.stopCookieName);
   } else {
     // setting a property will automatically cause a Set-Cookie response to be sent
     console.log('First time visiting');
@@ -78,8 +82,10 @@ router.post('/agencySearch-mobile', function(req, res) {
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-agency', function(req, res) {  
     var agency = req.body.agency;
+    var agencyName = req.body.agencyName;
     // console.log("agency change: "+agency);    
     req.mySession.agencyCookie=agency;
+    req.mySession.agencyCookieName=agencyName;
     req.mySession.routeCookie=null;
     req.mySession.directionCookie=null;
     req.mySession.stopCookie=null;
@@ -99,11 +105,15 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-route', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
+    var agency = req.body.agency,
+        agencyName = req.body.agencyName;
+    var route = req.body.route,
+        routeName = req.body.routeName;
     // console.log("route change: "+route);
     req.mySession.agencyCookie=agency;
+    req.mySession.agencyCookieName=agencyName;
     req.mySession.routeCookie=route;
+    req.mySession.routeCookieName=routeName;
     req.mySession.directionCookie=null;
     req.mySession.stopCookie=null;
 
@@ -120,13 +130,19 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-direction', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
-    var direction = req.body.direction;
+    var agency = req.body.agency,
+        agencyName = req.body.agencyName;
+    var route = req.body.route,
+        routeName = req.body.routeName;
+    var direction = req.body.direction,
+        directionName = req.body.directionName;
     // console.log("route direction: "+direction);
     req.mySession.agencyCookie=agency;
+    req.mySession.agencyCookieName=agencyName;
     req.mySession.routeCookie=route;
+    req.mySession.routeCookieName=routeName;
     req.mySession.directionCookie=direction;
+    req.mySession.directionCookieName=directionName;
     req.mySession.stopCookie=null;
 
     pt = null;
@@ -142,15 +158,23 @@ router.post('/agencySearchMobile-change-direction', function(req, res) {
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/agencySearchMobile-change-stop', function(req, res) {  
-    var agency = req.body.agency;
-    var route = req.body.route;
-    var direction = req.body.direction;
-    var stop = req.body.stop;
+    var agency = req.body.agency,
+        agencyName = req.body.agencyName;
+    var route = req.body.route,
+        routeName = req.body.routeName;
+    var direction = req.body.direction,
+        directionName = req.body.directionName;
+    var stop = req.body.stop,
+        stopName = req.body.stopName;
     // console.log("change stop: "+stop);
     req.mySession.agencyCookie=agency;
+    req.mySession.agencyCookieName=agencyName;
     req.mySession.routeCookie=route;
+    req.mySession.routeCookieName=routeName;
     req.mySession.directionCookie=direction;
+    req.mySession.directionCookieName=directionName;
     req.mySession.stopCookie=stop;
+    req.mySession.stopCookieName=stopName;
 
     pt = null;
     pt = new PublicTransit();
@@ -268,6 +292,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
               myTags : item.$.tag, selected : 'yes'
             });
             req.mySession.agencyCookie=item.$.tag;
+            req.mySession.agencyCookieName=item.$.title;
           } else {
             that.myAgencies.push({
               myAgenciesNames : item.$.title, 
@@ -281,6 +306,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
               myTags : item.$.tag, selected : 'yes'
             });
             req.mySession.agencyCookie=item.$.tag;
+            req.mySession.agencyCookieName=item.$.title;
           } else {
             that.myAgencies.push({
               myAgenciesNames : item.$.title, 
@@ -321,6 +347,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
               myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
             });
             req.mySession.routeCookie=item.$.tag;
+            req.mySession.routeCookieName=item.$.title;
           } else {
             that.myRouts.push({
               myRoutsNames : item.$.title, myTags : item.$.tag
@@ -332,6 +359,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
               myRoutsNames : item.$.title, myTags : item.$.tag, selected : 'yes'
             });
             req.mySession.routeCookie=item.$.tag;
+            req.mySession.routeCookieName=item.$.title;
           } else {
             that.myRouts.push({
               myRoutsNames : item.$.title, myTags : item.$.tag
@@ -370,12 +398,17 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
                 myTags : item.$.tag, 
+                lat: item.$.lat,
+                lon: item.$.lon,                   
                 selected : 'yes'
               });
               req.mySession.directionCookie=item.$.tag;
+              req.mySession.directionCookieName=item.$.title;
             } else {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
+                lat: item.$.lat,
+                lon: item.$.lon,                   
                 myTags : item.$.tag                  
               });
             }
@@ -383,13 +416,18 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
             if (item.$.tag == direction) {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
-                myTags : item.$.tag, 
+                myTags : item.$.tag,
+                lat: item.$.lat,
+                lon: item.$.lon,                    
                 selected : 'yes'
               });
               req.mySession.directionCookie=item.$.tag;
+              req.mySession.directionCookieName=item.$.title;
             } else {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
+                lat: item.$.lat,
+                lon: item.$.lon,                   
                 myTags : item.$.tag                  
               });
             }
@@ -434,13 +472,18 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                         if (req.mySession.stopCookie==item.$.tag) {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            myTags : item.$.tag, 
+                            myTags : item.$.tag,
+                            lat: item.$.lat,
+                            lon: item.$.lon, 
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
+                          req.mySession.stopCookieName=itemStop.$.title;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
+                            lat: item.$.lat,
+                            lon: item.$.lon, 
                             myTags : item.$.tag
                           });
                         }
@@ -448,13 +491,18 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                         if (initialTag == 0) {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
+                            lat: item.$.lat,
+                            lon: item.$.lon, 
                             myTags : item.$.tag, 
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
+                          req.mySession.stopCookieName=itemStop.$.title;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
+                            lat: item.$.lat,
+                            lon: item.$.lon, 
                             myTags : item.$.tag
                           });
                         }
@@ -502,18 +550,23 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
 
       that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
         if (req.mySession.directionCookie) {
-          inspect("req.mySession.directionCookie is present: "+req.mySession.directionCookie)
+          // inspect("req.mySession.directionCookie is present: "+req.mySession.directionCookie)
           if (req.mySession.directionCookie == item.$.tag) {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
               myTags : item.$.tag, 
+              lat: item.$.lat,
+              lon: item.$.lon,                 
               selected : 'yes'
             });
             req.mySession.directionCookie=item.$.tag;
+            req.mySession.directionCookieName=item.$.title;
             selectedDirection=item.$.tag;
           } else {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
+              lat: item.$.lat,
+              lon: item.$.lon,                 
               myTags : item.$.tag                  
             });
           }
@@ -522,19 +575,24 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
               myTags : item.$.tag, 
+              lat: item.$.lat,
+              lon: item.$.lon,                 
               selected : 'yes'
             });
             req.mySession.directionCookie=item.$.tag;
+            req.mySession.directionCookieName=item.$.title;
             selectedDirection=item.$.tag;
           } else {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
+              lat: item.$.lat,
+              lon: item.$.lon,                 
               myTags : item.$.tag                  
             });
           }
           initialTag++;  
         }
-        inspect("selectedDirection: "+selectedDirection);
+        // inspect("selectedDirection: "+selectedDirection);
       });
       that.myAggregateData.push({myDirections:that.myDirections});
 
@@ -549,12 +607,17 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag, 
+                      lat: item.$.lat,
+                      lon: item.$.lon, 
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
+                    req.mySession.stopCookieName=itemStop.$.title;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
+                      lat: item.$.lat,
+                      lon: item.$.lon, 
                       myTags : item.$.tag
                     });
                   }
@@ -564,13 +627,18 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                   if (initialTag == 0) {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      myTags : item.$.tag, 
+                      myTags : item.$.tag,
+                      lat: item.$.lat,
+                      lon: item.$.lon,  
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
+                    req.mySession.stopCookieName=itemStop.$.title;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
+                      lat: item.$.lat,
+                      lon: item.$.lon, 
                       myTags : item.$.tag
                     });
                   }

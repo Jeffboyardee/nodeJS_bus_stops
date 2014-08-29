@@ -20,10 +20,14 @@ router.use(function(req, res, next) {
 
   if (req.mySession.seenyou) {
     console.log('Been here, done that.');
-    inspect("This is in the cookie->"+req.mySession.agencyCookie);
-    inspect("This is in the cookie->"+req.mySession.routeCookie);
-    inspect("This is in the cookie->"+req.mySession.directionCookie);
-    inspect("This is in the cookie->"+req.mySession.stopCookie);
+    inspect("This is the agencyCookie->"+req.mySession.agencyCookie);
+    inspect("This is the agencyCookieName->"+req.mySession.agencyCookieName);
+    inspect("This is the routeCookie->"+req.mySession.routeCookie);
+    inspect("This is the routeCookieName->"+req.mySession.routeCookieName);
+    inspect("This is the directionCookie->"+req.mySession.directionCookie);
+    inspect("This is the directionCookieName->"+req.mySession.directionCookieName);
+    inspect("This is the stopCookie->"+req.mySession.stopCookie);
+    inspect("This is the stopCookieName->"+req.mySession.stopCookieName);
   } else {
     // setting a property will automatically cause a Set-Cookie response to be sent
     req.mySession.seenyou=true;
@@ -37,18 +41,10 @@ router.use(function(req, res, next) {
 });
 
 router.get('/',  function(req, res){
-  tempAgency=req.mySession.agencyCookie;
-  tempRoute=req.mySession.routeCookie;
-  tempDirection=req.mySession.directionCookie;
-  tempStop=req.mySession.stopCookie;
+  tempAgency=req.mySession.agencyCookieName;
+  tempRoute=req.mySession.routeCookieName;
 
 	res.render('yelp', { title: '[Mobile]Yelp lookup', agency: tempAgency, route: tempRoute });
-});
-
-// See http://www.yelp.com/developers/documentation/v2/search_api
-yelp.search({term: "chinese+food", ll: "34.1477499, -118.08121", limit: "5"}, function(error, data) {
-  console.log(error);
-  inspect(data);
 });
 
 // See http://www.yelp.com/developers/documentation/v2/business
@@ -56,6 +52,28 @@ yelp.search({term: "chinese+food", ll: "34.1477499, -118.08121", limit: "5"}, fu
 //   console.log(error);
 //   inspect(data);
 // });
+
+router.get('/searching', function(req, res){
+  // input value from search
+  var val = req.query.search;
+  var yelpAndtransit=[];
+  inspect(yelpPT.myStops);
+
+  yelpPT.myStops.forEach(function(stopItems) {    
+    yelpAndtransit.push({myStopsNames: stopItems.myStopsNames});
+    var latAndlon = yelpPT.myStops.lat+","+yelpPT.myStops.lon;
+    inspect(latAndlon);
+    // See http://www.yelp.com/developers/documentation/v2/search_api
+    yelp.search({term: val, ll: latAndlon, limit: "5"}, function(error, data) {
+      console.log(error);
+      yelpAndtransit.concat(data);
+      inspect(data);
+    });    
+
+  });
+  inspect(yelpAndtransit);
+  res.send(data);
+});
 
 /* POST home page and redirect to dynamic url for mobile */
 router.post('/yelpSearch-mobile', function(req, res) {      
@@ -77,7 +95,7 @@ router.post('/yelpSearch-mobile', function(req, res) {
         yelpPT.directionsRequestMobile(yelpPT.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
           yelpPT.stopsRequestMobile(yelpPT.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {
             yelpPT.predictionsRequest(yelpPT.stopListUrl+tempAgency+"&r="+tempRoute+"&s="+tempStop+"&useShortTitles=true", function(data) {
-              inspect(yelpPT.myAggregateData);
+              // inspect(yelpPT.myAggregateData);
               res.send(yelpPT.myAggregateData);
             });
           }); // END requesting stops
@@ -290,7 +308,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
           
         });
         that.myAggregateData.push({myDirections:that.myDirections});
-        inspect(that.myDirections);
+        // inspect(that.myDirections);
         callback();
       });
     });  
@@ -327,12 +345,16 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
                             myTags : item.$.tag, 
+                            lat: item.$.lat,
+                            lon: item.$.lon,                             
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
+                            lat: item.$.lat,
+                            lon: item.$.lon,                             
                             myTags : item.$.tag
                           });
                         }
@@ -341,12 +363,16 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
                             myTags : item.$.tag, 
+                            lat: item.$.lat,
+                            lon: item.$.lon,                             
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
+                            lat: item.$.lat,
+                            lon: item.$.lon,                             
                             myTags : item.$.tag
                           });
                         }
@@ -399,6 +425,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
               myTags : item.$.tag, 
+              lat: item.$.lat,
+              lon: item.$.lon,               
               selected : 'yes'
             });
             req.mySession.directionCookie=item.$.tag;
@@ -406,6 +434,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
           } else {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
+              lat: item.$.lat,
+              lon: item.$.lon,               
               myTags : item.$.tag                  
             });
           }
@@ -414,6 +444,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
               myTags : item.$.tag, 
+              lat: item.$.lat,
+              lon: item.$.lon,               
               selected : 'yes'
             });
             req.mySession.directionCookie=item.$.tag;
@@ -421,6 +453,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
           } else {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
+              lat: item.$.lat,
+              lon: item.$.lon,               
               myTags : item.$.tag                  
             });
           }
@@ -441,12 +475,16 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag, 
+                      lat: item.$.lat,
+                      lon: item.$.lon,                       
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
+                      lat: item.$.lat,
+                      lon: item.$.lon,                         
                       myTags : item.$.tag
                     });
                   }
@@ -456,13 +494,17 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                   if (initialTag == 0) {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      myTags : item.$.tag, 
+                      myTags : item.$.tag,
+                      lat: item.$.lat,
+                      lon: item.$.lon,                          
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
+                      lat: item.$.lat,
+                      lon: item.$.lon,                         
                       myTags : item.$.tag
                     });
                   }
