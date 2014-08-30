@@ -55,24 +55,12 @@ router.get('/',  function(req, res){
 
 router.get('/searching', function(req, res){
   // input value from search
-  var val = req.query.search;
-  var yelpAndtransit=[];
-  inspect(yelpPT.myStops);
+  var val = req.query.search;  
 
-  yelpPT.myStops.forEach(function(stopItems) {    
-    yelpAndtransit.push({myStopsNames: stopItems.myStopsNames});
-    var latAndlon = yelpPT.myStops.lat+","+yelpPT.myStops.lon;
-    inspect(latAndlon);
-    // See http://www.yelp.com/developers/documentation/v2/search_api
-    yelp.search({term: val, ll: latAndlon, limit: "5"}, function(error, data) {
-      console.log(error);
-      yelpAndtransit.concat(data);
-      inspect(data);
-    });    
-
+  yelpPT.yelpRequest(val, function(data) {
+    inspect(data);
+    res.send(data);  
   });
-  inspect(yelpAndtransit);
-  res.send(data);
 });
 
 /* POST home page and redirect to dynamic url for mobile */
@@ -141,13 +129,40 @@ function PublicTransit() {
   this.myPredictionsRaw = [],
   this.myPredictions = [],
   this.myPredictionsMin = [],
-  this.myPredictionsSec = [];
+  this.myPredictionsSec = [],
+  this.yelpAndtransit={};
   console.log("Constructors set");
+}
+
+
+/**
+ * @public
+ * @description: Calls the yelp middleware. It gets the json data from the specified url location
+ * @param searchParam: The search text fom the user
+**/
+PublicTransit.prototype.yelpRequest = function (searchParam, callback) {
+  var that = this;
+  var val = searchParam;
+
+  this.myStops.forEach(function(stopItems) {
+    var latAndlon = stopItems.lat+","+stopItems.lon;
+    that.yelpAndtransit['yelpStopName'] = stopItems.myStopsNames;
+    // that.yelpAndtransit.concat(stopItems.myStopsNames);
+    // that.yelpAndtransit.businesses[0]["yelpStops"] = stopItems.myStopsNames;
+    // See http://www.yelp.com/developers/documentation/v2/search_api
+    yelp.search({term: val, ll: latAndlon, limit: "5"}, function(error, data) {
+      // console.log(error);   
+      // inspect(that.yelpAndtransit);   
+      that.yelpAndtransit['businesses'] = data.businesses;      
+      // inspect(that.yelpAndtransit.businesses[0]);      
+    }); 
+  });
+  callback(that.yelpAndtransit);
 }
 
 /**
  * @public
- * @descriyelpPTion: Calls the request middleware. It gets the xml data from the specified url location
+ * @description: Calls the request middleware. It gets the xml data from the specified url location
  * @param url: The url of the api location
 **/
 PublicTransit.prototype.dataRequests = function (url, callback) {
@@ -158,7 +173,7 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
 
 /**
  * @public
- * @descriyelpPTion: Requests list of agencies from nextBus
+ * @description: Requests list of agencies from nextBus
  * @param url: The url of the api that provides a list of agencies available
  * @param agencyID: The agency id (oyelpPTional) taken from the url
 **/
@@ -212,7 +227,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
 
 /**
  * @public
- * @descriyelpPTion: Requests list of routes from nextBus
+ * @description: Requests list of routes from nextBus
  * @param url: The url of the api that provides a list of routes available
  * @param routeID: The route id (oyelpPTional) taken from the url
 **/
@@ -260,7 +275,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
 
 /**
  * @public
- * @descriyelpPTion: Requests list of Directions and Stops from nextBus
+ * @description: Requests list of Directions and Stops from nextBus
  * @param url: The url of the api that provides a list of directions and stops available
  * @param directionID: The directions id (oyelpPTional) taken from the url
  * @param stopID: The stop id (oyelpPTional) taken from the url
@@ -280,12 +295,16 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
                 myTags : item.$.tag, 
+                lat: item.$.lat,
+                lon: item.$.lon,
                 selected : 'yes'
               });
               req.mySession.directionCookie=item.$.tag;
             } else {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
+                lat: item.$.lat,
+                lon: item.$.lon,
                 myTags : item.$.tag                  
               });
             }
@@ -294,12 +313,16 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
                 myTags : item.$.tag, 
+                lat: item.$.lat,
+                lon: item.$.lon,
                 selected : 'yes'
               });
               req.mySession.directionCookie=item.$.tag;
             } else {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
+                lat: item.$.lat,
+                lon: item.$.lon,
                 myTags : item.$.tag                  
               });
             }
@@ -316,7 +339,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
 
 /**
  * @public
- * @descriyelpPTion: Requests list of Directions and Stops from nextBus, and stores list of
+ * @description: Requests list of Directions and Stops from nextBus, and stores list of
  * stops in an array called myStops.
  * @param url: The url of the api that provides a list of directions and stops available
  * @param directionID: The directions id (oyelpPTional) taken from the url
@@ -345,16 +368,16 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
                             myTags : item.$.tag, 
-                            lat: item.$.lat,
-                            lon: item.$.lon,                             
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon,                             
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            lat: item.$.lat,
-                            lon: item.$.lon,                             
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon,                             
                             myTags : item.$.tag
                           });
                         }
@@ -363,16 +386,16 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
                             myTags : item.$.tag, 
-                            lat: item.$.lat,
-                            lon: item.$.lon,                             
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon,                             
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            lat: item.$.lat,
-                            lon: item.$.lon,                             
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon,                             
                             myTags : item.$.tag
                           });
                         }
@@ -402,7 +425,7 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
 
 /**
  * @public
- * @descriyelpPTion: Requests list of Directions and Stops from nextBus, and stores list of
+ * @description: Requests list of Directions and Stops from nextBus, and stores list of
  * directions in an array called myDirections
  * @param url: The url of the api that provides a list of directions and stops available
  * @param directionID: The directions id (oyelpPTional) taken from the url
@@ -475,16 +498,16 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag, 
-                      lat: item.$.lat,
-                      lon: item.$.lon,                       
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon,                       
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      lat: item.$.lat,
-                      lon: item.$.lon,                         
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon,                         
                       myTags : item.$.tag
                     });
                   }
@@ -495,16 +518,16 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag,
-                      lat: item.$.lat,
-                      lon: item.$.lon,                          
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon,                          
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      lat: item.$.lat,
-                      lon: item.$.lon,                         
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon,                         
                       myTags : item.$.tag
                     });
                   }
@@ -527,7 +550,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
 
 /**
  * @public
- * @descriyelpPTion: Requests list of predictions from nextBus
+ * @description: Requests list of predictions from nextBus
  * @param url: The url of the api that provides a list of predictions available
 **/
 PublicTransit.prototype.predictionsRequest = function (url, callback) {

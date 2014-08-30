@@ -391,8 +391,9 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
       parser(data, function(err, result) {
         that.myDirectionsRaw = result;
         var initialTag=0;
-
+        // inspect(that.myDirectionsRaw);
         that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
+          // inspect(item);
           if (req.mySession.directionCookie) {
             if (item.$.tag == req.mySession.directionCookie) {
               that.myDirections.push({                  
@@ -473,8 +474,8 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
                             myTags : item.$.tag,
-                            lat: item.$.lat,
-                            lon: item.$.lon, 
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon, 
                             selected : 'yes'
                           });
                           req.mySession.stopCookie=item.$.tag;
@@ -482,8 +483,8 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            lat: item.$.lat,
-                            lon: item.$.lon, 
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon, 
                             myTags : item.$.tag
                           });
                         }
@@ -491,8 +492,8 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                         if (initialTag == 0) {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            lat: item.$.lat,
-                            lon: item.$.lon, 
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon, 
                             myTags : item.$.tag, 
                             selected : 'yes'
                           });
@@ -501,8 +502,8 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
                         } else {
                           that.myStops.push({
                             myStopsNames : itemStop.$.title, 
-                            lat: item.$.lat,
-                            lon: item.$.lon, 
+                            lat: itemStop.$.lat,
+                            lon: itemStop.$.lon, 
                             myTags : item.$.tag
                           });
                         }
@@ -607,8 +608,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag, 
-                      lat: item.$.lat,
-                      lon: item.$.lon, 
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon, 
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
@@ -616,8 +617,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      lat: item.$.lat,
-                      lon: item.$.lon, 
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon, 
                       myTags : item.$.tag
                     });
                   }
@@ -628,8 +629,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
                       myTags : item.$.tag,
-                      lat: item.$.lat,
-                      lon: item.$.lon,  
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon,  
                       selected : 'yes'
                     });
                     req.mySession.stopCookie=item.$.tag;
@@ -637,8 +638,8 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
                   } else {
                     that.myStops.push({
                       myStopsNames : itemStop.$.title, 
-                      lat: item.$.lat,
-                      lon: item.$.lon, 
+                      lat: itemStop.$.lat,
+                      lon: itemStop.$.lon, 
                       myTags : item.$.tag
                     });
                   }
@@ -684,7 +685,7 @@ PublicTransit.prototype.predictionsRequest = function (url, callback) {
         });                    
         that.myAggregateData.push({myPredictions:that.myPredictions});                    
       }
-      inspect(that.myAggregateData);
+      // inspect(that.myAggregateData);
       callback();
     });
   });
