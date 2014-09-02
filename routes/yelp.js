@@ -11,7 +11,7 @@ var xml2js = require('xml2js');
 var parser = new xml2js.Parser().parseString;
 var inspect = require('eyes').inspector({maxLength: false});
 var yelpPT = '';
-yelpPT = new PublicTransit();
+yelpPT = new PublicTransit_yelp();
 
 // route middleware that will happen on every request
 router.use(function(req, res, next) {
@@ -53,11 +53,12 @@ router.get('/',  function(req, res){
 //   inspect(data);
 // });
 
-router.get('/searching', function(req, res){
+router.get('/searchingYelp', function(req, res){
   // input value from search
   var val = req.query.search;  
 
   yelpPT.yelpRequest(val, function(data) {
+    inspect("callback received");
     inspect(data);
     res.send(data);  
   });
@@ -77,7 +78,7 @@ router.post('/yelpSearch-mobile', function(req, res) {
     tempStop=req.mySession.stopCookie;
 
     yelpPT = null;
-    yelpPT = new PublicTransit();
+    yelpPT = new PublicTransit_yelp();
     yelpPT.agencyRequestMobile(yelpPT.agencyListUrl, req, function(data) {
       yelpPT.routeRequestMobile(yelpPT.routeListUrl+tempAgency, req, function(data) {
         yelpPT.directionsRequestMobile(yelpPT.directionListUrl+tempAgency+"&r="+tempRoute, tempDirection, req, function(data) {          
@@ -108,7 +109,7 @@ router.post('/yelpSearch-mobile', function(req, res) {
 /** 
  * PublicTransit class Constructor
 **/
-function PublicTransit() {
+function PublicTransit_yelp() {
   this.agencyListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList";
   this.routeListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=";
   this.directionListUrl = "http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=";
@@ -130,7 +131,7 @@ function PublicTransit() {
   this.myPredictions = [],
   this.myPredictionsMin = [],
   this.myPredictionsSec = [],
-  this.yelpAndtransit={};
+  this.yelpAndtransit=[];
   console.log("Constructors set");
 }
 
@@ -140,24 +141,33 @@ function PublicTransit() {
  * @description: Calls the yelp middleware. It gets the json data from the specified url location
  * @param searchParam: The search text fom the user
 **/
-PublicTransit.prototype.yelpRequest = function (searchParam, callback) {
-  var that = this;
+PublicTransit_yelp.prototype.yelpRequest = function (searchParam, callback) {
+  var yr = this;
   var val = searchParam;
-
-  this.myStops.forEach(function(stopItems) {
-    var latAndlon = stopItems.lat+","+stopItems.lon;
-    that.yelpAndtransit['yelpStopName'] = stopItems.myStopsNames;
+  // inspect(this.myStops);
+  //this.myStops.forEach(function(stopItems) {
+    // var latAndlon = stopItems.lat+","+stopItems.lon;
+    var latAndlon = "37.7901099,-122.39343";
+    // inspect(stopItems.myStopsNames+", "+latAndlon);
+    // that.yelpAndtransit['yelpStopName'] = stopItems.myStopsNames;
     // that.yelpAndtransit.concat(stopItems.myStopsNames);
     // that.yelpAndtransit.businesses[0]["yelpStops"] = stopItems.myStopsNames;
     // See http://www.yelp.com/developers/documentation/v2/search_api
-    yelp.search({term: val, ll: latAndlon, limit: "5"}, function(error, data) {
+    yelp.search({term: val, ll: "37.7901099,-122.39343"}, function(error, data) {
       // console.log(error);   
-      // inspect(that.yelpAndtransit);   
-      that.yelpAndtransit['businesses'] = data.businesses;      
-      // inspect(that.yelpAndtransit.businesses[0]);      
-    }); 
-  });
-  callback(that.yelpAndtransit);
+        
+      // that.yelpAndtransit.push( {"business_name":data.businesses[0].name, "stop_name":stopItems.myStopsNames} );
+      inspect("started pushing to yelpAndtransit");
+      yr.yelpAndtransit.push( {"business_name":data.businesses[0].name} );      
+      inspect("finished pushing to yelpAndtransit");
+      callback(yr.yelpAndtransit); 
+    });
+    inspect("exited yelp search");
+    
+  //  return;
+  //});
+  // inspect(that.yelpAndtransit);
+  
 }
 
 /**
@@ -165,7 +175,7 @@ PublicTransit.prototype.yelpRequest = function (searchParam, callback) {
  * @description: Calls the request middleware. It gets the xml data from the specified url location
  * @param url: The url of the api location
 **/
-PublicTransit.prototype.dataRequests = function (url, callback) {
+PublicTransit_yelp.prototype.dataRequests = function (url, callback) {
   request(url, function (err, resp, body) {
     callback(body);
   });
@@ -177,7 +187,7 @@ PublicTransit.prototype.dataRequests = function (url, callback) {
  * @param url: The url of the api that provides a list of agencies available
  * @param agencyID: The agency id (oyelpPTional) taken from the url
 **/
-PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
+PublicTransit_yelp.prototype.agencyRequestMobile = function (url, req, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
@@ -231,7 +241,7 @@ PublicTransit.prototype.agencyRequestMobile = function (url, req, callback) {
  * @param url: The url of the api that provides a list of routes available
  * @param routeID: The route id (oyelpPTional) taken from the url
 **/
-PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
+PublicTransit_yelp.prototype.routeRequestMobile = function (url, req, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
@@ -280,7 +290,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
  * @param directionID: The directions id (oyelpPTional) taken from the url
  * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
-PublicTransit.prototype.directionsRequestMobile = function (url, direction, req, callback) {
+PublicTransit_yelp.prototype.directionsRequestMobile = function (url, direction, req, callback) {
   var that = this;
 
     this.dataRequests(url, function(data) {
@@ -345,7 +355,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
  * @param directionID: The directions id (oyelpPTional) taken from the url
  * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
-PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, callback) {
+PublicTransit_yelp.prototype.stopsRequestMobile = function (url, direction, req, callback) {
   var that = this;
 
     this.dataRequests(url, function(data) {
@@ -431,7 +441,7 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
  * @param directionID: The directions id (oyelpPTional) taken from the url
  * @param stopID: The stop id (oyelpPTional) taken from the url
 **/
-PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callback) {
+PublicTransit_yelp.prototype.directionsStopsRequestMobile = function (url, req, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
@@ -553,7 +563,7 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
  * @description: Requests list of predictions from nextBus
  * @param url: The url of the api that provides a list of predictions available
 **/
-PublicTransit.prototype.predictionsRequest = function (url, callback) {
+PublicTransit_yelp.prototype.predictionsRequest = function (url, callback) {
   var that = this;
 
   this.dataRequests(url, function(data) {
