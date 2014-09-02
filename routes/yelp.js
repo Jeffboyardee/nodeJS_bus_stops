@@ -55,13 +55,8 @@ router.get('/',  function(req, res){
 
 router.get('/searchingYelp', function(req, res){
   // input value from search
-  var val = req.query.search;  
-
-  yelpPT.yelpRequest(val, function(data) {
-    inspect("callback received");
-    inspect(data);
-    res.send(data);  
-  });
+  var val = req.query.search;
+  yelpPT.returnStopCall(res, val, 0);
 });
 
 /* POST home page and redirect to dynamic url for mobile */
@@ -135,39 +130,67 @@ function PublicTransit_yelp() {
   console.log("Constructors set");
 }
 
+PublicTransit_yelp.size = function(obj) {
+  var size = 0, key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) size++;
+  }
+  return size;
+}
+
+PublicTransit_yelp.prototype.returnStopCall = function (res, val, tmpCounter) {
+  var size = PublicTransit_yelp.size(this.myStops);
+  inspect("this is the size of myStops array: "+size);
+
+  if (!size) {
+    console.log("myStops variables not defined");
+    return;
+  }
+
+  if (tmpCounter === size) {
+    inspect("blah!!!");  
+    inspect(this.yelpAndtransit);
+    res.send(this.yelpAndtransit);
+    return 1;
+  }
+
+  var stopItems = this.myStops[tmpCounter];
+  var latAndlon = stopItems.lat+","+stopItems.lon;
+
+  this.yelpRequest(val, latAndlon, stopItems, function(data) {
+    inspect("callback received"); 
+    inspect("inside counter-> "+tmpCounter);
+    
+    yelpPT.returnStopCall(res, val, tmpCounter+1);
+  }); 
+}
 
 /**
  * @public
  * @description: Calls the yelp middleware. It gets the json data from the specified url location
  * @param searchParam: The search text fom the user
 **/
-PublicTransit_yelp.prototype.yelpRequest = function (searchParam, callback) {
+PublicTransit_yelp.prototype.yelpRequest = function (searchParam, latAndlon, stopItems, callback) {
   var yr = this;
   var val = searchParam;
-  // inspect(this.myStops);
-  //this.myStops.forEach(function(stopItems) {
-    // var latAndlon = stopItems.lat+","+stopItems.lon;
-    var latAndlon = "37.7901099,-122.39343";
-    // inspect(stopItems.myStopsNames+", "+latAndlon);
-    // that.yelpAndtransit['yelpStopName'] = stopItems.myStopsNames;
-    // that.yelpAndtransit.concat(stopItems.myStopsNames);
-    // that.yelpAndtransit.businesses[0]["yelpStops"] = stopItems.myStopsNames;
-    // See http://www.yelp.com/developers/documentation/v2/search_api
-    yelp.search({term: val, ll: "37.7901099,-122.39343"}, function(error, data) {
-      // console.log(error);   
-        
-      // that.yelpAndtransit.push( {"business_name":data.businesses[0].name, "stop_name":stopItems.myStopsNames} );
-      inspect("started pushing to yelpAndtransit");
-      yr.yelpAndtransit.push( {"business_name":data.businesses[0].name} );      
-      inspect("finished pushing to yelpAndtransit");
-      callback(yr.yelpAndtransit); 
-    });
-    inspect("exited yelp search");
     
-  //  return;
-  //});
-  // inspect(that.yelpAndtransit);
-  
+    yelp.search({term: val, ll: latAndlon, limit: "3"}, function(error, data) {
+      // console.log(error);   
+      
+      inspect("started pushing to yelpAndtransit");
+      data.businesses.forEach(function(busi_items){
+        yr.yelpAndtransit.push({
+          "business_name":busi_items.name,
+          "mobile_url":busi_items.mobile_url,
+          "display_address":busi_items.location.display_address,
+          "stop_name":stopItems.myStopsNames
+        });      
+      });
+      
+      inspect("finished pushing to yelpAndtransit");
+      console.log(data);
+      callback();
+    });
 }
 
 /**

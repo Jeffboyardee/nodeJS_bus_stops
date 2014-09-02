@@ -6,7 +6,7 @@ $(function(){
 	// loading gif goes here //
 	// $('#loading').show();
 
-	// $.post('/yelp/yelpSearch-mobile', function(data) {
+	$.post('/yelp/yelpSearch-mobile', function(data) {
 		// $agencyList.html( optionsTemplate(data[0]) );
 		// $routeList.html( routeTemplate(data[1]) );
 		// $directionList.html( directionTemplate(data[2]) );	
@@ -14,18 +14,17 @@ $(function(){
 		// $predictions.html( predictionsTemplate(data[4]) );
 		// loading gif ends here //
 		// $('#loading').hide();
-	// });
+	});
 
 	$('#search').on('keyup', function(e){
 		if(e.keyCode === 13) {
 		 var parameters = { search: $(this).val() };
 
 			$.get('/yelp/searchingYelp', parameters, function(data){
-				console.log("test parameters here-> "+data);
 			    // if (data instanceof Array) {
 			    	console.log("Client side->:");
 			    	console.log(data);
-			    	$results.html( dataTemplate(data) );	
+			    	$results.html( dataTemplate({"businesses":data}) );	
 			    // } else {
 			    // 	console.log("in the else");
 			    // 	$results.html(data);
