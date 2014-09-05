@@ -4,6 +4,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var session = require("client-sessions");
 var bodyParser = require('body-parser');
+var inspect = require('eyes').inspector({maxLength: false});
 
 var routes_main = require('./routes/index');
 var routes_desktop = require('./routes/desktop');
@@ -64,7 +65,7 @@ app.use(function(err, req, res, next) {
 });
 
 
-const DEFAULT_TIMEOUT = 10000;
+// const DEFAULT_TIMEOUT = 10000;
 
 /**
 Throws an error after the specified request timeout elapses.
@@ -115,3 +116,4 @@ Options include:
 // }
 
 module.exports = app;
+// module.exports.inspect = inspect;
