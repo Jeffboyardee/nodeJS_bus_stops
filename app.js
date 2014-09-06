@@ -35,10 +35,27 @@ app.use('/yelp', routes_yelp);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    var err = new Error();
     err.status = 404;
     next(err);
 });
+
+/// catch 404 and forward to error handler
+// app.get('*', function(req, res, next) {
+//   var err = new Error();
+//   err.status = 404;
+//   next(err);
+// });
+
+// // handling 404 errors
+// app.use(function(err, req, res, next) {
+//   if(err.status !== 404) {
+//     return next();
+//   }
+
+//   res.send(err.message || '** no unicorns here **');
+// });
+
 
 /// error handlers
 
@@ -47,10 +64,16 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
+        if (err.status == 404) {
+            res.render('404', {
+                title: '404: File Not Found'
+            });
+        } else {
+            res.render('500', {
+                title: '500: Internal Server Error', 
+                error: err
+            });
+        }
     });
 }
 
@@ -58,10 +81,16 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+    if (err.status == 404) {
+        res.render('404', {
+            title: '404: File Not Found'
+        });
+    } else {
+        res.render('500', {
+            title: '500: Internal Server Error', 
+            error: {}
+        });
+    }
 });
 
 
