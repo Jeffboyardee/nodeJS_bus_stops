@@ -175,7 +175,7 @@ PublicTransit.prototype.routeRequestMobile = function (url, req, callback) {
         
       });
       that.myAggregateData.push({myRouts:that.myRouts});   
-      // inspect(that.myRouts);
+      //inspect(that.myRouts);
       callback();     
     });
   }); 
@@ -196,9 +196,8 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
       parser(data, function(err, result) {
         that.myDirectionsRaw = result;
         var initialTag=0;
-        // inspect(that.myDirectionsRaw);
+
         that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
-          // inspect(item);
           if (req.mySession.directionCookie) {
             if (item.$.tag == req.mySession.directionCookie) {
               that.myDirections.push({                  
@@ -208,8 +207,8 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
                 lon: item.$.lon,                   
                 selected : 'yes'
               });
-              req.mySession.directionCookie=item.$.tag;
-              req.mySession.directionCookieName=item.$.title;
+              // req.mySession.directionCookie=item.$.tag;
+              // req.mySession.directionCookieName=item.$.title;
             } else {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
@@ -219,7 +218,7 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
               });
             }
           } else {
-            if (item.$.tag == direction) {
+            // if ((item.$.tag == direction) || (initialTag == 0)) {
               that.myDirections.push({                  
                 myDirectionsNames : item.$.title, 
                 myTags : item.$.tag,
@@ -228,21 +227,20 @@ PublicTransit.prototype.directionsRequestMobile = function (url, direction, req,
                 selected : 'yes'
               });
               req.mySession.directionCookie=item.$.tag;
-              req.mySession.directionCookieName=item.$.title;
-            } else {
-              that.myDirections.push({                  
-                myDirectionsNames : item.$.title, 
-                lat: item.$.lat,
-                lon: item.$.lon,                   
-                myTags : item.$.tag                  
-              });
-            }
+              req.mySession.directionCookieName=item.$.title;              
+            // } else {
+            //   that.myDirections.push({                  
+            //     myDirectionsNames : item.$.title, 
+            //     lat: item.$.lat,
+            //     lon: item.$.lon,                   
+            //     myTags : item.$.tag                  
+            //   });
+            // }
             initialTag++;  
           }
           
         });
         that.myAggregateData.push({myDirections:that.myDirections});
-        // inspect(that.myDirections);
         callback();
       });
     });  
@@ -330,7 +328,6 @@ PublicTransit.prototype.stopsRequestMobile = function (url, direction, req, call
         });
 
         that.myAggregateData.push({myStops:that.myStops});
-        // inspect(that.myStops);
         callback();
       });
     }); 
@@ -356,7 +353,6 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
 
       that.myDirectionsRaw.body.route[0].direction.forEach(function(item) {
         if (req.mySession.directionCookie) {
-          // inspect("req.mySession.directionCookie is present: "+req.mySession.directionCookie)
           if (req.mySession.directionCookie == item.$.tag) {
             that.myDirections.push({                  
               myDirectionsNames : item.$.title, 
@@ -390,13 +386,16 @@ PublicTransit.prototype.directionsStopsRequestMobile = function (url, req, callb
           }
           initialTag++;  
         }
-        // inspect("selectedDirection: "+selectedDirection);
       });
       that.myAggregateData.push({myDirections:that.myDirections});
-
+      
       that.myDirectionsRaw.body.route[0].direction.forEach(function(itemDirection) {  // loop through each direction        
+        inspect("JEFF my selected direction pt1: ")
+        inspect(that.myDirections)  
         if (itemDirection.$.tag == selectedDirection) { // finding the correct direction
           initialTag = 0;
+          inspect("JEFF my selected direction pt2: ")
+          inspect(itemDirection.$.tag) 
           itemDirection.stop.forEach(function(item) {  // loop through each stop of the selected direction       
             that.myDirectionsRaw.body.route[0].stop.forEach(function(itemStop) { // loop through all the stops available within this route
               if (req.mySession.stopCookie) {

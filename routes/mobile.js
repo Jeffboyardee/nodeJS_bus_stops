@@ -68,12 +68,15 @@ router.post('/agencySearch-mobile', function(req, res) {
     }); // END requesting agency
   } else {
     pt.agencyRequestMobile(pt.agencyListUrl, req, function(data) {
-      pt.routeRequestMobile(pt.routeListUrl+pt.myAgencies[0].myTags, req, function(data) {
-        pt.directionsStopsRequestMobile(pt.directionListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags, req, function(data) {
-          pt.predictionsRequest(pt.stopListUrl+pt.myAgencies[0].myTags+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-            inspect(pt.myAggregateData);
-            res.send(pt.myAggregateData);
-          });
+      pt.routeRequestMobile(pt.routeListUrl+req.mySession.agencyCookie, req, function(data) {
+        pt.directionsRequestMobile(pt.directionListUrl+req.mySession.agencyCookie+"&r="+req.mySession.routeCookie, '', req, function(data) {          
+          pt.stopsRequestMobile(pt.directionListUrl+req.mySession.agencyCookie+"&r="+req.mySession.routeCookie, req.mySession.directionCookie, req, function(data) {
+            pt.predictionsRequest(pt.stopListUrl+req.mySession.agencyCookie+"&r="+req.mySession.routeCookie+"&s="+req.mySession.stopCookie+"&useShortTitles=true", function(data) {
+              //inspect(pt.myAggregateData);
+              res.send(pt.myAggregateData);
+            });
+
+          }); // END requesting stop
         }); // END requesting direction
       }); // END requesting route
     }); // END requesting agency
@@ -96,13 +99,17 @@ router.post('/agencySearchMobile-change-agency', function(req, res) {
     pt = null;
     pt = new PublicTransit();
     pt.routeRequestMobile(pt.routeListUrl+agency, req, function(data) {
-      pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+pt.myRouts[0].myTags, req, function(data) {  
+      pt.directionsRequestMobile(pt.directionListUrl+agency+"&r="+req.mySession.routeCookie, '', req, function(data) {          
+      pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+req.mySession.routeCookie, req.mySession.directionCookie, req, function(data) {  
+
           pt.predictionsRequest(pt.stopListUrl+agency+"&r="+pt.myRouts[0].myTags+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
             // inspect("This is what myAggregateData looks like after agency change by user->");
             // inspect(pt.myAggregateData);
             res.send(pt.myAggregateData);
           });
-      }); // END requesting direction and stops
+      });
+      });
+
     }); // END requesting route
 });
 
@@ -122,12 +129,15 @@ router.post('/agencySearchMobile-change-route', function(req, res) {
 
     pt = null;
     pt = new PublicTransit();
-    pt.directionsStopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req, function(data) {
-      pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
-        // inspect("This is what myAggregateData looks like after route change by user->");
-        // inspect(pt.myAggregateData);
-        res.send(pt.myAggregateData);
-      });
+    
+    pt.directionsRequestMobile(pt.directionListUrl+agency+"&r="+route, '', req, function(data) {          
+      pt.stopsRequestMobile(pt.directionListUrl+agency+"&r="+route, req.mySession.directionCookie, req, function(data) {        
+        pt.predictionsRequest(pt.stopListUrl+agency+"&r="+route+"&s="+pt.myStops[0].myTags+"&useShortTitles=true", function(data) {
+          // inspect("This is what myAggregateData looks like after route change by user->");
+          // inspect(pt.myAggregateData);
+          res.send(pt.myAggregateData);
+        }); // END requesting prediction
+      }); // END requesting stops
     }); // END requesting direction
 });
 
