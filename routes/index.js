@@ -28,7 +28,7 @@ router.use(function(req, res, next) {
 });
 
 router.get('/',  function(req, res){
-  res.render('index', { title: 'Jeff Wei' });
+  res.render('index', { title: 'Public Transit Schedule' });
 });
 
 
