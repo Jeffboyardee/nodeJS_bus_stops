@@ -18,11 +18,8 @@ block content
 					//-h1.cover-heading Cover your page.
 					p.lead
 						a(href="/mobile").btn.btn-lg.btn-default Mobile
-						a(href="/desktop").btn.btn-lg.btn-default disabled Desktop
+						a(href="/desktop").btn.btn-lg.btn-default.disabled Desktop
 				.mastfoot
 					.inner
-						p Jeff Wei, 2014
-
-script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
-script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js")
-script(src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
+						p Jeff Wei, <span class="today_date"></span>
+	script(src="/javascripts/index.js")
