@@ -3,13 +3,13 @@ var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var session = require("client-sessions");
-var bodyParser = require('body-parser');
+// var bodyParser = require('body-parser');
 var inspect = require('eyes').inspector({maxLength: false});
 
 var routes_main = require('./routes/index');
 var routes_desktop = require('./routes/desktop');
 var routes_mobile = require('./routes/mobile');
-var routes_yelp = require('./routes/yelp');
+// var routes_yelp = require('./routes/yelp');
 var app = express();
 
 // view engine setup
@@ -18,8 +18,8 @@ app.set('view engine', 'jade');
 
 // Using middleware by using use()
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded());
 app.use(cookieParser("public_transportation"));
 app.use(session({
   cookieName: 'mySession', // cookie name dictates the key name added to the request object
@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes_main);
 app.use('/desktop', routes_desktop);
 app.use('/mobile', routes_mobile);
-app.use('/yelp', routes_yelp);
+// app.use('/yelp', routes_yelp);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
